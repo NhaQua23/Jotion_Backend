@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: jotion-backend
+  #  datasource:
+  #    url: jdbc:h2:mem:testdb
+  #    driver-class-name: org.h2.Driver
+  #    username: sa
+  #    password:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/jotion
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+  jpa:
+    #    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    defer-datasource-initialization: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: true
+  #  sql:
+  #    init:
+  #      mode: always
+  #      data-locations: classpath:data-manual.sql
+  h2:
+    console:
+      enabled: true
+
+jwt:
+  signerKey: "qAHqeAfczndcPvqu+cGpNMuKYGlWv3spvj2mur6913iSNfReU/Eg55R6KXUPwS4F"
