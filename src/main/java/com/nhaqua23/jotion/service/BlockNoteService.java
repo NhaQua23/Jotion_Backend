@@ -1,22 +1,22 @@
 package com.nhaqua23.jotion.service;
 
-import com.nhaqua23.jotion.dto.BlockNoteDTO;
+import com.nhaqua23.jotion.dto.response.BlockNoteResponse;
 
 import java.util.List;
 
 public interface BlockNoteService {
 
-	BlockNoteDTO save(BlockNoteDTO dto);
+	BlockNoteResponse save(BlockNoteResponse dto);
 
-	BlockNoteDTO update(Integer id, BlockNoteDTO dto);
+	BlockNoteResponse update(Integer id, BlockNoteResponse dto);
 
-	List<BlockNoteDTO> getAll();
+	List<BlockNoteResponse> getAll();
 
-	BlockNoteDTO getById(Integer id);
+	BlockNoteResponse getById(Integer id);
 
-	List<BlockNoteDTO> getAllByPageId(Integer pageId);
+	List<BlockNoteResponse> getAllByPageId(Integer pageId);
 
-	BlockNoteDTO getByPageId(Integer pageId);
+	BlockNoteResponse getByPageId(Integer pageId);
 
 	void delete(Integer id);
 }

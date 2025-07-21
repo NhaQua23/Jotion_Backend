@@ -1,22 +1,27 @@
-package com.nhaqua23.jotion.dto;
+package com.nhaqua23.jotion.dto.page;
 
 import com.nhaqua23.jotion.model.Page;
-import lombok.Data;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 
 @Data
-public class PageDTO {
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class PageResponse {
 
-	private Integer id;
-	private String title;
-	private String background;
-	private LocalDate createdAt;
-	private LocalDate updatedAt;
-	private Integer workspaceId;
-	private Integer authorId;
+	Integer id;
+	String title;
+	String background;
+	LocalDate createdAt;
+	LocalDate updatedAt;
+	Integer workspaceId;
+	Integer authorId;
 
-	public static Page toPage(PageDTO dto) {
+	public static Page toPage(PageResponse dto) {
 		final Page page = new Page();
 
 		page.setTitle(dto.getTitle());
@@ -27,8 +32,8 @@ public class PageDTO {
 		return page;
 	}
 
-	public static PageDTO toPageDTO(Page page) {
-		final PageDTO dto = new PageDTO();
+	public static PageResponse toPageDTO(Page page) {
+		final PageResponse dto = new PageResponse();
 
 		dto.setId(page.getId());
 		dto.setTitle(page.getTitle());

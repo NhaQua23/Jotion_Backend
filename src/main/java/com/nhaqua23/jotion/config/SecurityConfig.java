@@ -24,7 +24,8 @@ public class SecurityConfig {
 
 	private final String[] PUBLIC_ENDPOINTS = {
 			"/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-			"/api/login", "/api/signup", "api/introspect", "/ws/**"
+			"/api/login", "/api/signup", "api/introspect", "/ws/**",
+//			"/api/users/**", "/api/workspaces/**"	// remove after testing
 	};
 
 	@Value("${jwt.signerKey}")
@@ -36,7 +37,7 @@ public class SecurityConfig {
 				.authorizeHttpRequests(request ->
 						request
 								.requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-								.requestMatchers("/api/users").hasRole(UserRole.ADMIN.name())
+//								.requestMatchers("/api/users").hasRole(UserRole.ADMIN.name())
 
 								.anyRequest().authenticated()
 				);

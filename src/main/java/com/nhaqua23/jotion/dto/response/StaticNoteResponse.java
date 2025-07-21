@@ -1,4 +1,4 @@
-package com.nhaqua23.jotion.dto;
+package com.nhaqua23.jotion.dto.response;
 
 import com.nhaqua23.jotion.model.StaticNote;
 import lombok.Builder;
@@ -6,14 +6,14 @@ import lombok.Data;
 
 @Data
 @Builder
-public class StaticNoteDTO {
+public class StaticNoteResponse {
 
 	private Integer id;
 	private String content;
 	private Integer userId;
 	private Integer pageId;
 
-	public static StaticNote toStaticNote(StaticNoteDTO dto) {
+	public static StaticNote toStaticNote(StaticNoteResponse dto) {
 		final StaticNote staticNote = new StaticNote();
 
 		staticNote.setContent(dto.getContent());
@@ -21,8 +21,8 @@ public class StaticNoteDTO {
 		return staticNote;
 	}
 
-	public static StaticNoteDTO toStaticNoteDTO(StaticNote staticNote) {
-		return StaticNoteDTO.builder()
+	public static StaticNoteResponse toStaticNoteDTO(StaticNote staticNote) {
+		return StaticNoteResponse.builder()
 
 
 

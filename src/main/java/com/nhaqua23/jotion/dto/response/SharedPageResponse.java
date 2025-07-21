@@ -1,4 +1,4 @@
-package com.nhaqua23.jotion.dto;
+package com.nhaqua23.jotion.dto.response;
 
 import com.nhaqua23.jotion.model.SharedPage;
 import com.nhaqua23.jotion.model.UserRole;
@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class SharedPageDTO {
+public class SharedPageResponse {
 
 	private Integer id;
 	private UserRole role;
@@ -15,7 +15,7 @@ public class SharedPageDTO {
 	private Integer pageId;
 	private String emailAuthor;
 
-	public static SharedPage toSharedPage(SharedPageDTO dto) {
+	public static SharedPage toSharedPage(SharedPageResponse dto) {
 		final SharedPage sharedPage = new SharedPage();
 
 		sharedPage.setRole(dto.getRole());
@@ -23,8 +23,8 @@ public class SharedPageDTO {
 		return sharedPage;
 	}
 
-	public static SharedPageDTO toSharedPageDTO(SharedPage sharedPage) {
-		return SharedPageDTO.builder()
+	public static SharedPageResponse toSharedPageDTO(SharedPage sharedPage) {
+		return SharedPageResponse.builder()
 				.id(sharedPage.getId())
 				.role(sharedPage.getRole())
 				.email(sharedPage.getUser().getEmail())

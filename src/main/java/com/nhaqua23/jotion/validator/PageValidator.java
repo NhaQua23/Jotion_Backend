@@ -1,13 +1,13 @@
 package com.nhaqua23.jotion.validator;
 
-import com.nhaqua23.jotion.dto.PageDTO;
+import com.nhaqua23.jotion.dto.page.PageResponse;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PageValidator {
 
-	public static List<String> validatePage(PageDTO dto) {
+	public static List<String> validatePage(PageResponse dto) {
 		List<String> errors = new ArrayList<>();
 
 		if (dto == null) {

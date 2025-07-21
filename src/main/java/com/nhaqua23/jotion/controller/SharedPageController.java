@@ -1,8 +1,8 @@
 package com.nhaqua23.jotion.controller;
 
 import com.nhaqua23.jotion.controller.api.SharedPageAPI;
-import com.nhaqua23.jotion.dto.PageDTO;
-import com.nhaqua23.jotion.dto.SharedPageDTO;
+import com.nhaqua23.jotion.dto.page.PageResponse;
+import com.nhaqua23.jotion.dto.response.SharedPageResponse;
 import com.nhaqua23.jotion.service.SharedPageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,27 +18,27 @@ public class SharedPageController implements SharedPageAPI {
 	private SharedPageService sharedPageService;
 
 	@Override
-	public ResponseEntity<SharedPageDTO> sharePage(SharedPageDTO dto) {
+	public ResponseEntity<SharedPageResponse> sharePage(SharedPageResponse dto) {
 		return new ResponseEntity<>(sharedPageService.sharePage(dto), HttpStatus.OK);
 	}
 
 	@Override
-	public ResponseEntity<SharedPageDTO> unSharePage(SharedPageDTO dto) {
+	public ResponseEntity<SharedPageResponse> unSharePage(SharedPageResponse dto) {
 		return new ResponseEntity<>(sharedPageService.unSharePage(dto), HttpStatus.OK);
 	}
 
 	@Override
-	public ResponseEntity<List<SharedPageDTO>> getAllSharedPages() {
+	public ResponseEntity<List<SharedPageResponse>> getAllSharedPages() {
 		return new ResponseEntity<>(sharedPageService.getAll(), HttpStatus.OK);
 	}
 
 	@Override
-	public ResponseEntity<SharedPageDTO> getPageById(Integer id) {
+	public ResponseEntity<SharedPageResponse> getPageById(Integer id) {
 		return new ResponseEntity<>(sharedPageService.getById(id), HttpStatus.OK);
 	}
 
 	@Override
-	public ResponseEntity<List<PageDTO>> getAllSharedPagesByUserId(Integer userId) {
+	public ResponseEntity<List<PageResponse>> getAllSharedPagesByUserId(Integer userId) {
 		return new ResponseEntity<>(sharedPageService.getAllPagesByUserId(userId), HttpStatus.OK);
 	}
 }

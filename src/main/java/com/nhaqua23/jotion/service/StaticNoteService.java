@@ -1,18 +1,18 @@
 package com.nhaqua23.jotion.service;
 
-import com.nhaqua23.jotion.dto.StaticNoteDTO;
+import com.nhaqua23.jotion.dto.response.StaticNoteResponse;
 
 import java.util.List;
 
 public interface StaticNoteService {
 
-	StaticNoteDTO save(StaticNoteDTO dto);
+	StaticNoteResponse save(StaticNoteResponse dto);
 
-	List<StaticNoteDTO> getAll();
+	List<StaticNoteResponse> getAll();
 
-	StaticNoteDTO getById(Integer id);
+	StaticNoteResponse getById(Integer id);
 
-	StaticNoteDTO getByPageId(Integer pageId);
+	StaticNoteResponse getByPageId(Integer pageId);
 
 	void delete(Integer id);
 }

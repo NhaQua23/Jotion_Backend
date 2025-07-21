@@ -3,7 +3,7 @@ package com.nhaqua23.jotion.controller.api;
 import com.nimbusds.jose.JOSEException;
 import com.nhaqua23.jotion.dto.AuthDTO;
 import com.nhaqua23.jotion.dto.IntrospectDTO;
-import com.nhaqua23.jotion.dto.UserDTO;
+import com.nhaqua23.jotion.dto.user.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -34,7 +34,7 @@ public interface AuthAPI {
 			@ApiResponse(responseCode = "2001", description = "User not exist"),
 	})
 	ResponseEntity<AuthDTO> login(
-			@RequestBody UserDTO dto
+			@RequestBody UserResponse dto
 	);
 
 	@PostMapping(
@@ -50,8 +50,8 @@ public interface AuthAPI {
 			@ApiResponse(responseCode = "201", description = "User logged in successfully"),
 			@ApiResponse(responseCode = "2001", description = "User not exist"),
 	})
-	ResponseEntity<UserDTO> signup(
-			@RequestBody UserDTO dto
+	ResponseEntity<UserResponse> signup(
+			@RequestBody UserResponse dto
 	);
 
 	@PostMapping(

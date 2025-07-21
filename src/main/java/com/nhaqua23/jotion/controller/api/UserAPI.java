@@ -1,6 +1,9 @@
 package com.nhaqua23.jotion.controller.api;
 
-import com.nhaqua23.jotion.dto.UserDTO;
+import com.nhaqua23.jotion.dto.response.CommonResponse;
+import com.nhaqua23.jotion.dto.user.UpdateProfileRequest;
+import com.nhaqua23.jotion.dto.user.CreateUserRequest;
+import com.nhaqua23.jotion.dto.user.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -8,8 +11,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "User", description = "User management APIs")
 @RequestMapping("/api")
@@ -28,8 +29,8 @@ public interface UserAPI {
 			@ApiResponse(responseCode = "201", description = "User created successfully"),
 			@ApiResponse(responseCode = "2001", description = "User not valid"),
 	})
-	ResponseEntity<UserDTO> createUser(
-			@RequestBody UserDTO dto
+	ResponseEntity<CommonResponse<UserResponse>> createUser(
+			@RequestBody CreateUserRequest request
 	);
 
 	@PatchMapping(
@@ -46,9 +47,9 @@ public interface UserAPI {
 			@ApiResponse(responseCode = "1001", description = "User not found"),
 			@ApiResponse(responseCode = "2001", description = "User not valid"),
 	})
-	ResponseEntity<UserDTO> updateUser(
+	ResponseEntity<CommonResponse<UserResponse>> updateProfile(
 			@PathVariable("id") Integer id,
-			@RequestBody UserDTO dto
+			@RequestBody UpdateProfileRequest request
 	);
 
 	@GetMapping(
@@ -62,7 +63,7 @@ public interface UserAPI {
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
 	})
-	ResponseEntity<List<UserDTO>> getAllUsers();
+	ResponseEntity<CommonResponse<UserResponse>> getAllUsers();
 
 	@GetMapping(
 			value = "/users/{id}",
@@ -76,7 +77,7 @@ public interface UserAPI {
 			@ApiResponse(responseCode = "200", description = "User retrieved successfully"),
 			@ApiResponse(responseCode = "1001", description = "User not found"),
 	})
-	ResponseEntity<UserDTO> getUserById(
+	ResponseEntity<CommonResponse<UserResponse>> getUserById(
 			@PathVariable("id") Integer id
 	);
 
@@ -92,7 +93,7 @@ public interface UserAPI {
 			@ApiResponse(responseCode = "204", description = "User deleted successfully"),
 			@ApiResponse(responseCode = "1001", description = "User not found"),
 	})
-	ResponseEntity deleteUserById(
+	ResponseEntity<CommonResponse<UserResponse>> deleteUserById(
 			@PathVariable("id") Integer id
 	);
 }

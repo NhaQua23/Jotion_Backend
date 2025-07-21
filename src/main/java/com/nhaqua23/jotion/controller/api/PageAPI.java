@@ -1,6 +1,10 @@
 package com.nhaqua23.jotion.controller.api;
 
-import com.nhaqua23.jotion.dto.PageDTO;
+import com.nhaqua23.jotion.dto.page.CreatePageRequest;
+import com.nhaqua23.jotion.dto.page.PageResponse;
+import com.nhaqua23.jotion.dto.page.UpdateBackgroundRequest;
+import com.nhaqua23.jotion.dto.page.UpdateTitleRequest;
+import com.nhaqua23.jotion.dto.response.CommonResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -8,8 +12,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "Page", description = "Page management APIs")
 @RequestMapping("/api")
@@ -30,8 +32,8 @@ public interface PageAPI {
 			@ApiResponse(responseCode = "2002", description = "Workspace not found"),
 			@ApiResponse(responseCode = "2002", description = "Page not valid"),
 	})
-	ResponseEntity<PageDTO> createPage(
-			@RequestBody PageDTO dto
+	ResponseEntity<CommonResponse<PageResponse>> createPage(
+			@RequestBody CreatePageRequest request
 	);
 
 	@PatchMapping(
@@ -48,9 +50,9 @@ public interface PageAPI {
 			@ApiResponse(responseCode = "1002", description = "Page not found"),
 			@ApiResponse(responseCode = "2002", description = "Page not valid"),
 	})
-	ResponseEntity<PageDTO> updatePage(
+	ResponseEntity<CommonResponse<PageResponse>> updatePage(
 			@PathVariable("id") Integer id,
-			@RequestBody PageDTO dto
+			@RequestBody UpdateTitleRequest request
 	);
 
 	@PatchMapping(
@@ -67,9 +69,9 @@ public interface PageAPI {
 			@ApiResponse(responseCode = "1002", description = "Page not found"),
 			@ApiResponse(responseCode = "2002", description = "Page not valid"),
 	})
-	ResponseEntity<PageDTO> updatePageBackground(
+	ResponseEntity<CommonResponse<PageResponse>> updateBackground(
 			@PathVariable("id") Integer id,
-			@RequestBody PageDTO dto
+			@RequestBody UpdateBackgroundRequest request
 	);
 
 	@GetMapping(
@@ -83,7 +85,7 @@ public interface PageAPI {
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Pages retrieved successfully"),
 	})
-	ResponseEntity<List<PageDTO>> getAllPages();
+	ResponseEntity<CommonResponse<PageResponse>> getAllPages();
 
 	@GetMapping(
 			value = "/pages/{id}",
@@ -97,7 +99,7 @@ public interface PageAPI {
 			@ApiResponse(responseCode = "200", description = "Page retrieved successfully"),
 			@ApiResponse(responseCode = "1002", description = "Page not found"),
 	})
-	ResponseEntity<PageDTO> getPageById(
+	ResponseEntity<CommonResponse<PageResponse>> getPageById(
 			@PathVariable("id") Integer id
 	);
 
@@ -113,7 +115,7 @@ public interface PageAPI {
 			@ApiResponse(responseCode = "200", description = "Pages retrieved successfully"),
 			@ApiResponse(responseCode = "1001", description = "User not found"),
 	})
-	ResponseEntity<List<PageDTO>> getAllPagesByAuthorId(
+	ResponseEntity<CommonResponse<PageResponse>> getAllPagesByAuthorId(
 			@PathVariable("id") Integer authorId
 	);
 
@@ -129,7 +131,7 @@ public interface PageAPI {
 			@ApiResponse(responseCode = "200", description = "Pages retrieved successfully"),
 			@ApiResponse(responseCode = "1001", description = "Workspace not found"),
 	})
-	ResponseEntity<List<PageDTO>> getAllPagesByWorkspaceId(
+	ResponseEntity<CommonResponse<PageResponse>> getAllPagesByWorkspaceId(
 			@PathVariable("id") Integer workspaceId
 	);
 
@@ -161,7 +163,7 @@ public interface PageAPI {
 			@ApiResponse(responseCode = "204", description = "Page deleted successfully"),
 			@ApiResponse(responseCode = "1002", description = "Page not found"),
 	})
-	ResponseEntity deletePageById(
+	ResponseEntity<CommonResponse<PageResponse>> deletePageById(
 			@PathVariable("id") Integer id
 	);
 }

@@ -1,20 +1,22 @@
 package com.nhaqua23.jotion.service;
 
-import com.nhaqua23.jotion.dto.WorkspaceDTO;
+import com.nhaqua23.jotion.dto.workspace.CreateWorkspaceRequest;
+import com.nhaqua23.jotion.dto.workspace.UpdateWorkspaceRequest;
+import com.nhaqua23.jotion.dto.workspace.WorkspaceResponse;
 
 import java.util.List;
 
 public interface WorkspaceService {
 
-	WorkspaceDTO save(WorkspaceDTO workspaceDTO);
+	WorkspaceResponse save(CreateWorkspaceRequest request);
 
-	WorkspaceDTO update(Integer id, WorkspaceDTO workspaceDTO);
+	WorkspaceResponse update(Integer id, UpdateWorkspaceRequest request);
 
-	List<WorkspaceDTO> getAll();
+	List<WorkspaceResponse> getAll();
 
-	WorkspaceDTO getById(Integer id);
+	WorkspaceResponse getById(Integer id);
 
-	List<WorkspaceDTO> getAllByUserId(Integer userId);
+	List<WorkspaceResponse> getAllByUserId(Integer userId);
 
 	void delete(Integer id);
 }

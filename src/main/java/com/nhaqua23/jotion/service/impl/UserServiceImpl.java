@@ -1,16 +1,19 @@
 package com.nhaqua23.jotion.service.impl;
 
-import com.nhaqua23.jotion.dto.UserDTO;
+import com.nhaqua23.jotion.dto.user.CreateUserRequest;
+import com.nhaqua23.jotion.dto.user.UserResponse;
+import com.nhaqua23.jotion.dto.user.UpdateProfileRequest;
 import com.nhaqua23.jotion.exception.EntityNotFoundException;
 import com.nhaqua23.jotion.exception.ErrorCode;
 import com.nhaqua23.jotion.exception.InvalidEntityException;
+import com.nhaqua23.jotion.mapper.UserMapper;
 import com.nhaqua23.jotion.model.User;
 import com.nhaqua23.jotion.model.UserRole;
 import com.nhaqua23.jotion.repository.UserRepository;
 import com.nhaqua23.jotion.service.UserService;
 import com.nhaqua23.jotion.validator.UserValidator;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,18 +21,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
-public class UserServiceImpl  implements UserService {
+public class UserServiceImpl implements UserService {
 
-	@Autowired
-	private UserRepository userRepository;
-
-	@Autowired
-	private PasswordEncoder passwordEncoder;
+	private final UserRepository userRepository;
+	private final PasswordEncoder passwordEncoder;
+	private final UserMapper userMapper;
 
 	@Override
-	public UserDTO save(UserDTO dto) {
-		List<String> errors = UserValidator.validateCreateUser(dto);
+	public UserResponse save(CreateUserRequest request) {
+		List<String> errors = UserValidator.validateCreateUser(request);
 		if (!errors.isEmpty()) {
 			log.error(errors.toString());
 			throw new InvalidEntityException(
@@ -39,17 +41,16 @@ public class UserServiceImpl  implements UserService {
 			);
 		}
 
-		User user = UserDTO.toUser(dto);
-
-		user.setPassword(passwordEncoder.encode(dto.getPassword()));
+		User user = userMapper.toUser(request);
+		user.setPassword(passwordEncoder.encode(request.getPassword()));
 		user.setRole(UserRole.USER);
 
-		return UserDTO.toUserDTO(userRepository.save(user));
+		return userMapper.toUserResponse(userRepository.save(user));
 	}
 
 	@Override
-	public UserDTO update(Integer id, UserDTO dto) {
-		List<String> errors = UserValidator.validateUpdateUser(dto);
+	public UserResponse updateProfile(Integer id, UpdateProfileRequest request) {
+		List<String> errors = UserValidator.validateUpdateUser(request);
 		if (!errors.isEmpty()) {
 			log.error(errors.toString());
 			throw new InvalidEntityException(
@@ -64,22 +65,21 @@ public class UserServiceImpl  implements UserService {
 						"User not found with ID = " + id,
 						ErrorCode.USER_NOT_FOUND
 				));
+		user.setUsername(request.getUsername());
 
-		user.setUsername(dto.getUsername());
-
-		return UserDTO.toUserDTO(userRepository.save(user));
+		return userMapper.toUserResponse(userRepository.save(user));
 	}
 
 	@Override
-	public List<UserDTO> getAll() {
+	public List<UserResponse> getAll() {
 		return userRepository.findAll().stream()
-				.map(UserDTO::toUserDTO).collect(Collectors.toList());
+				.map(userMapper::toUserResponse).collect(Collectors.toList());
 	}
 
 	@Override
-	public UserDTO getById(Integer id) {
+	public UserResponse getById(Integer id) {
 		return userRepository.findById(id)
-				.map(UserDTO::toUserDTO)
+				.map(userMapper::toUserResponse)
 				.orElseThrow(() -> new EntityNotFoundException(
 						"User not found with ID = " + id,
 						ErrorCode.USER_NOT_FOUND
@@ -87,9 +87,9 @@ public class UserServiceImpl  implements UserService {
 	}
 
 	@Override
-	public UserDTO getByEmail(String email) {
+	public UserResponse getByEmail(String email) {
 		return userRepository.findByEmail(email)
-				.map(UserDTO::toUserDTO)
+				.map(userMapper::toUserResponse)
 				.orElseThrow(() -> new EntityNotFoundException(
 						"User not found with email = " + email,
 						ErrorCode.USER_NOT_FOUND

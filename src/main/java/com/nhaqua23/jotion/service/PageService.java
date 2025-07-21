@@ -1,24 +1,27 @@
 package com.nhaqua23.jotion.service;
 
-import com.nhaqua23.jotion.dto.PageDTO;
+import com.nhaqua23.jotion.dto.page.CreatePageRequest;
+import com.nhaqua23.jotion.dto.page.PageResponse;
+import com.nhaqua23.jotion.dto.page.UpdateBackgroundRequest;
+import com.nhaqua23.jotion.dto.page.UpdateTitleRequest;
 
 import java.util.List;
 
 public interface PageService {
 
-	PageDTO save(PageDTO pageDTO);
+	PageResponse save(CreatePageRequest request);
 
-	PageDTO update(Integer id, PageDTO pageDTO);
+	PageResponse update(Integer id, UpdateTitleRequest request);
 
-	PageDTO updateBackground(Integer id, PageDTO dto);
+	PageResponse updateBackground(Integer id, UpdateBackgroundRequest request);
 
-	List<PageDTO> getAll();
+	List<PageResponse> getAll();
 
-	PageDTO getById(Integer id);
+	PageResponse getById(Integer id);
 
-	List<PageDTO> getAllByWorkspaceId(Integer workspaceId);
+	List<PageResponse> getAllByWorkspaceId(Integer workspaceId);
 
-	List<PageDTO> getAllByAuthorId(Integer authorId);
+	List<PageResponse> getAllByAuthorId(Integer authorId);
 
 //	List<PageDTO> getAllByTagId(Integer tagId);
 

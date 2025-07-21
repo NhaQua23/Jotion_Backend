@@ -1,7 +1,7 @@
 package com.nhaqua23.jotion.service.impl;
 
-import com.nhaqua23.jotion.dto.PageDTO;
-import com.nhaqua23.jotion.dto.SharedPageDTO;
+import com.nhaqua23.jotion.dto.page.PageResponse;
+import com.nhaqua23.jotion.dto.response.SharedPageResponse;
 import com.nhaqua23.jotion.exception.EntityNotFoundException;
 import com.nhaqua23.jotion.exception.ErrorCode;
 import com.nhaqua23.jotion.model.Page;
@@ -33,7 +33,7 @@ public class SharedPageServiceImpl implements SharedPageService {
 	private UserRepository userRepository;
 
 	@Override
-	public SharedPageDTO sharePage(SharedPageDTO dto) {
+	public SharedPageResponse sharePage(SharedPageResponse dto) {
 		Page page = pageRepository.findById(dto.getPageId())
 				.orElseThrow(() -> new EntityNotFoundException(
 						"Page not found with id: " + dto.getPageId(),
@@ -72,11 +72,11 @@ public class SharedPageServiceImpl implements SharedPageService {
 		sharedPage.setPage(page);
 		sharedPage.setRole(dto.getRole());
 
-		return SharedPageDTO.toSharedPageDTO(sharedPageRepository.save(sharedPage));
+		return SharedPageResponse.toSharedPageDTO(sharedPageRepository.save(sharedPage));
 	}
 
 	@Override
-	public SharedPageDTO unSharePage(SharedPageDTO dto) {
+	public SharedPageResponse unSharePage(SharedPageResponse dto) {
 		Page page = pageRepository.findById(dto.getPageId())
 				.orElseThrow(() -> new EntityNotFoundException(
 						"Page not found with id: " + dto.getPageId(),
@@ -102,19 +102,19 @@ public class SharedPageServiceImpl implements SharedPageService {
 			sharedPageRepository.delete(shared);
 		}
 
-		return SharedPageDTO.toSharedPageDTO(sharedPage);
+		return SharedPageResponse.toSharedPageDTO(sharedPage);
 	}
 
 	@Override
-	public List<SharedPageDTO> getAll() {
+	public List<SharedPageResponse> getAll() {
 		return sharedPageRepository.findAll().stream()
-				.map(SharedPageDTO::toSharedPageDTO).collect(Collectors.toList());
+				.map(SharedPageResponse::toSharedPageDTO).collect(Collectors.toList());
 	}
 
 	@Override
-	public SharedPageDTO getById(Integer id) {
+	public SharedPageResponse getById(Integer id) {
 		return sharedPageRepository.findById(id)
-				.map(SharedPageDTO::toSharedPageDTO)
+				.map(SharedPageResponse::toSharedPageDTO)
 				.orElseThrow(() -> new EntityNotFoundException(
 						"Shared Page not found with id = " + id,
 						ErrorCode.PAGE_NOT_FOUND
@@ -122,13 +122,13 @@ public class SharedPageServiceImpl implements SharedPageService {
 	}
 
 	@Override
-	public List<SharedPageDTO> getAllByUserId(Integer userId) {
+	public List<SharedPageResponse> getAllByUserId(Integer userId) {
 		return sharedPageRepository.findAllByUserId(userId).stream()
-				.map(SharedPageDTO::toSharedPageDTO).collect(Collectors.toList());
+				.map(SharedPageResponse::toSharedPageDTO).collect(Collectors.toList());
 	}
 
 	@Override
-	public List<PageDTO> getAllPagesByUserId(Integer userId) {
+	public List<PageResponse> getAllPagesByUserId(Integer userId) {
 		List<SharedPage> listSharedPages = sharedPageRepository.findAllByUserId(userId).stream()
 				.collect(Collectors.toList());
 
@@ -138,6 +138,6 @@ public class SharedPageServiceImpl implements SharedPageService {
 			listPages.add(sharedPage.getPage());
 		}
 
-		return listPages.stream().map(PageDTO::toPageDTO).collect(Collectors.toList());
+		return listPages.stream().map(PageResponse::toPageDTO).collect(Collectors.toList());
 	}
 }

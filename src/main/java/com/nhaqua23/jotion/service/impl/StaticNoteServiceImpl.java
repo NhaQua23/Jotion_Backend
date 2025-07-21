@@ -1,6 +1,6 @@
 package com.nhaqua23.jotion.service.impl;
 
-import com.nhaqua23.jotion.dto.StaticNoteDTO;
+import com.nhaqua23.jotion.dto.response.StaticNoteResponse;
 import com.nhaqua23.jotion.exception.EntityNotFoundException;
 import com.nhaqua23.jotion.exception.ErrorCode;
 import com.nhaqua23.jotion.model.Page;
@@ -29,12 +29,12 @@ public class StaticNoteServiceImpl implements StaticNoteService {
 	private StaticNoteRepository staticNoteRepository;
 
 	@Override
-	public StaticNoteDTO save(StaticNoteDTO dto) {
+	public StaticNoteResponse save(StaticNoteResponse dto) {
 		if (staticNoteRepository.existsByPageId(dto.getPageId())) {
 			StaticNote staticNote = staticNoteRepository.findByPageId(dto.getPageId());
 			staticNote.setContent(dto.getContent());
 
-			return StaticNoteDTO.toStaticNoteDTO(staticNoteRepository.save(staticNote));
+			return StaticNoteResponse.toStaticNoteDTO(staticNoteRepository.save(staticNote));
 		} else {
 			User user = userRepository.findById(dto.getUserId())
 					.orElseThrow(() -> new EntityNotFoundException(
@@ -47,24 +47,24 @@ public class StaticNoteServiceImpl implements StaticNoteService {
 							ErrorCode.PAGE_NOT_FOUND
 					));
 
-			StaticNote staticNote = StaticNoteDTO.toStaticNote(dto);
+			StaticNote staticNote = StaticNoteResponse.toStaticNote(dto);
 			staticNote.setUser(user);
 			staticNote.setPage(page);
 
-			return StaticNoteDTO.toStaticNoteDTO(staticNoteRepository.save(staticNote));
+			return StaticNoteResponse.toStaticNoteDTO(staticNoteRepository.save(staticNote));
 		}
 	}
 
 	@Override
-	public List<StaticNoteDTO> getAll() {
+	public List<StaticNoteResponse> getAll() {
 		return staticNoteRepository.findAll().stream()
-				.map(StaticNoteDTO::toStaticNoteDTO).collect(Collectors.toList());
+				.map(StaticNoteResponse::toStaticNoteDTO).collect(Collectors.toList());
 	}
 
 	@Override
-	public StaticNoteDTO getById(Integer id) {
+	public StaticNoteResponse getById(Integer id) {
 		return staticNoteRepository.findById(id)
-				.map(StaticNoteDTO::toStaticNoteDTO)
+				.map(StaticNoteResponse::toStaticNoteDTO)
 				.orElseThrow(() -> new EntityNotFoundException(
 						"No note found with id: " + id,
 						ErrorCode.PAGE_NOT_FOUND
@@ -72,8 +72,8 @@ public class StaticNoteServiceImpl implements StaticNoteService {
 	}
 
 	@Override
-	public StaticNoteDTO getByPageId(Integer pageId) {
-		return StaticNoteDTO.toStaticNoteDTO(staticNoteRepository.findByPageId(pageId));
+	public StaticNoteResponse getByPageId(Integer pageId) {
+		return StaticNoteResponse.toStaticNoteDTO(staticNoteRepository.findByPageId(pageId));
 
 	}
 

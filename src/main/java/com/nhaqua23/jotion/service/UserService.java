@@ -1,20 +1,22 @@
 package com.nhaqua23.jotion.service;
 
-import com.nhaqua23.jotion.dto.UserDTO;
+import com.nhaqua23.jotion.dto.user.CreateUserRequest;
+import com.nhaqua23.jotion.dto.user.UserResponse;
+import com.nhaqua23.jotion.dto.user.UpdateProfileRequest;
 
 import java.util.List;
 
 public interface UserService {
 
-	UserDTO save(UserDTO userDTO);
+	UserResponse save(CreateUserRequest request);
 
-	UserDTO update(Integer id, UserDTO userDTO);
+	UserResponse updateProfile(Integer id, UpdateProfileRequest request);
 
-	List<UserDTO> getAll();
+	List<UserResponse> getAll();
 
-	UserDTO getById(Integer id);
+	UserResponse getById(Integer id);
 
-	UserDTO getByEmail(String email);
+	UserResponse getByEmail(String email);
 
 	void delete(Integer id);
 }

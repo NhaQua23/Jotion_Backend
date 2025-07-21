@@ -1,8 +1,12 @@
 package com.nhaqua23.jotion.controller;
 
 import com.nhaqua23.jotion.controller.api.WorkspaceAPI;
-import com.nhaqua23.jotion.dto.WorkspaceDTO;
+import com.nhaqua23.jotion.dto.response.CommonResponse;
+import com.nhaqua23.jotion.dto.workspace.CreateWorkspaceRequest;
+import com.nhaqua23.jotion.dto.workspace.UpdateWorkspaceRequest;
+import com.nhaqua23.jotion.dto.workspace.WorkspaceResponse;
 import com.nhaqua23.jotion.service.WorkspaceService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,39 +15,71 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 public class WorkspaceController implements WorkspaceAPI {
 
-	@Autowired
-	private WorkspaceService workspaceService;
+	private final WorkspaceService workspaceService;
 
 	@Override
-	public ResponseEntity<WorkspaceDTO> createWorkspace(WorkspaceDTO dto) {
-		return new ResponseEntity<>(workspaceService.save(dto), HttpStatus.CREATED);
+	public ResponseEntity<CommonResponse<WorkspaceResponse>> createWorkspace(CreateWorkspaceRequest request) {
+		CommonResponse response = CommonResponse.builder()
+				.status("success")
+				.message("Workspace created successfully")
+				.data(workspaceService.save(request))
+				.build();
+
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@Override
-	public ResponseEntity<WorkspaceDTO> updateWorkspace(Integer id, WorkspaceDTO dto) {
-		return new ResponseEntity<>(workspaceService.update(id, dto), HttpStatus.OK);
+	public ResponseEntity<CommonResponse<WorkspaceResponse>> updateWorkspace(Integer id, UpdateWorkspaceRequest request) {
+		CommonResponse response = CommonResponse.builder()
+				.status("success")
+				.message("Workspace updated successfully")
+				.data(workspaceService.update(id, request))
+				.build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Override
-	public ResponseEntity<List<WorkspaceDTO>> getAllWorkspaces() {
-		return new ResponseEntity<>(workspaceService.getAll(), HttpStatus.OK);
+	public ResponseEntity<CommonResponse<WorkspaceResponse>> getAllWorkspaces() {
+		CommonResponse response = CommonResponse.builder()
+				.status("success")
+				.data(workspaceService.getAll())
+				.build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Override
-	public ResponseEntity<WorkspaceDTO> getWorkspaceById(Integer id) {
-		return new ResponseEntity<>(workspaceService.getById(id), HttpStatus.OK);
+	public ResponseEntity<CommonResponse<WorkspaceResponse>> getWorkspaceById(Integer id) {
+		CommonResponse response = CommonResponse.builder()
+				.status("success")
+				.data(workspaceService.getById(id))
+				.build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Override
-	public ResponseEntity<List<WorkspaceDTO>> getAllWorkspacesByUserId(Integer userId) {
-		return new ResponseEntity<>(workspaceService.getAllByUserId(userId), HttpStatus.OK);
+	public ResponseEntity<CommonResponse<WorkspaceResponse>> getAllWorkspacesByUserId(Integer userId) {
+		CommonResponse response = CommonResponse.builder()
+				.status("success")
+				.data(workspaceService.getAllByUserId(userId))
+				.build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Override
-	public ResponseEntity deleteWorkspaceById(Integer id) {
+	public ResponseEntity<CommonResponse<WorkspaceResponse>> deleteWorkspaceById(Integer id) {
 		workspaceService.delete(id);
-		return new ResponseEntity(HttpStatus.OK);
+		CommonResponse response = CommonResponse.builder()
+				.status("success")
+				.message("Workspace deleted successfully")
+				.build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }

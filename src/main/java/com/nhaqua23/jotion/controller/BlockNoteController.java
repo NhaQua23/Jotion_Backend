@@ -1,7 +1,7 @@
 package com.nhaqua23.jotion.controller;
 
 import com.nhaqua23.jotion.controller.api.BlockNoteAPI;
-import com.nhaqua23.jotion.dto.BlockNoteDTO;
+import com.nhaqua23.jotion.dto.response.BlockNoteResponse;
 import com.nhaqua23.jotion.service.BlockNoteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,27 +17,27 @@ public class BlockNoteController implements BlockNoteAPI {
 	private BlockNoteService blockNoteService;
 
 	@Override
-	public ResponseEntity<BlockNoteDTO> createNote(BlockNoteDTO dto) {
+	public ResponseEntity<BlockNoteResponse> createNote(BlockNoteResponse dto) {
 		return new ResponseEntity<>(blockNoteService.save(dto), HttpStatus.CREATED);
 	}
 
 	@Override
-	public ResponseEntity<BlockNoteDTO> updateNote(Integer id, BlockNoteDTO dto) {
+	public ResponseEntity<BlockNoteResponse> updateNote(Integer id, BlockNoteResponse dto) {
 		return new ResponseEntity<>(blockNoteService.update(id, dto), HttpStatus.OK);
 	}
 
 	@Override
-	public ResponseEntity<List<BlockNoteDTO>> getAllNotes() {
+	public ResponseEntity<List<BlockNoteResponse>> getAllNotes() {
 		return new ResponseEntity<>(blockNoteService.getAll(), HttpStatus.OK);
 	}
 
 	@Override
-	public ResponseEntity<BlockNoteDTO> getNoteById(Integer id) {
+	public ResponseEntity<BlockNoteResponse> getNoteById(Integer id) {
 		return new ResponseEntity<>(blockNoteService.getById(id), HttpStatus.OK);
 	}
 
 	@Override
-	public ResponseEntity<BlockNoteDTO> getNoteByPageId(Integer id) {
+	public ResponseEntity<BlockNoteResponse> getNoteByPageId(Integer id) {
 		return new ResponseEntity<>(blockNoteService.getByPageId(id), HttpStatus.OK);
 	}
 

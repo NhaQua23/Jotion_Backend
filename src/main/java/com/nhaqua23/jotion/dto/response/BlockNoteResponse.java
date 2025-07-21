@@ -1,17 +1,17 @@
-package com.nhaqua23.jotion.dto;
+package com.nhaqua23.jotion.dto.response;
 
 import com.nhaqua23.jotion.model.BlockNote;
 import lombok.Data;
 
 @Data
-public class BlockNoteDTO {
+public class BlockNoteResponse {
 
 	private Integer id;
 	private String content;
 	private Integer pageId;
 	private Integer createdById;
 
-	public static BlockNote toBlockNote(BlockNoteDTO dto) {
+	public static BlockNote toBlockNote(BlockNoteResponse dto) {
 		final BlockNote note = new BlockNote();
 
 		note.setContent(dto.getContent());
@@ -19,8 +19,8 @@ public class BlockNoteDTO {
 		return note;
 	}
 
-	public static BlockNoteDTO toBlockNoteDTO(BlockNote note) {
-		final BlockNoteDTO dto = new BlockNoteDTO();
+	public static BlockNoteResponse toBlockNoteDTO(BlockNote note) {
+		final BlockNoteResponse dto = new BlockNoteResponse();
 
 		dto.setId(note.getId());
 		dto.setContent(note.getContent());

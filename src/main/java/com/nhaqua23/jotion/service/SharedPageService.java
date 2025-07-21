@@ -1,21 +1,21 @@
 package com.nhaqua23.jotion.service;
 
-import com.nhaqua23.jotion.dto.PageDTO;
-import com.nhaqua23.jotion.dto.SharedPageDTO;
+import com.nhaqua23.jotion.dto.page.PageResponse;
+import com.nhaqua23.jotion.dto.response.SharedPageResponse;
 
 import java.util.List;
 
 public interface SharedPageService {
 
-	SharedPageDTO sharePage(SharedPageDTO dto);
+	SharedPageResponse sharePage(SharedPageResponse dto);
 
-	SharedPageDTO unSharePage(SharedPageDTO dto);
+	SharedPageResponse unSharePage(SharedPageResponse dto);
 
-	List<SharedPageDTO> getAll();
+	List<SharedPageResponse> getAll();
 
-	SharedPageDTO getById(Integer id);
+	SharedPageResponse getById(Integer id);
 
-	List<SharedPageDTO> getAllByUserId(Integer userId);
+	List<SharedPageResponse> getAllByUserId(Integer userId);
 
-	List<PageDTO> getAllPagesByUserId(Integer userId);
+	List<PageResponse> getAllPagesByUserId(Integer userId);
 }

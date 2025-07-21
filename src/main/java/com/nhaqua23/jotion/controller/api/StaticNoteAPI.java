@@ -1,6 +1,6 @@
 package com.nhaqua23.jotion.controller.api;
 
-import com.nhaqua23.jotion.dto.StaticNoteDTO;
+import com.nhaqua23.jotion.dto.response.StaticNoteResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -28,8 +28,8 @@ public interface StaticNoteAPI {
 			@ApiResponse(responseCode = "201", description = "block created successfully"),
 			@ApiResponse(responseCode = "2001", description = "block not valid"),
 	})
-	ResponseEntity<StaticNoteDTO> createStatic(
-			@RequestBody StaticNoteDTO dto
+	ResponseEntity<StaticNoteResponse> createStatic(
+			@RequestBody StaticNoteResponse dto
 	);
 
 	@GetMapping(
@@ -43,7 +43,7 @@ public interface StaticNoteAPI {
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "blocks retrieved successfully"),
 	})
-	ResponseEntity<List<StaticNoteDTO>> getAllStatics();
+	ResponseEntity<List<StaticNoteResponse>> getAllStatics();
 
 	@GetMapping(
 			value = "/statics/{id}",
@@ -57,7 +57,7 @@ public interface StaticNoteAPI {
 			@ApiResponse(responseCode = "200", description = "block retrieved successfully"),
 			@ApiResponse(responseCode = "1001", description = "block not found"),
 	})
-	ResponseEntity<StaticNoteDTO> getStaticNoteById(
+	ResponseEntity<StaticNoteResponse> getStaticNoteById(
 			@PathVariable("id") Integer id
 	);
 
@@ -73,7 +73,7 @@ public interface StaticNoteAPI {
 			@ApiResponse(responseCode = "200", description = "block retrieved successfully"),
 			@ApiResponse(responseCode = "1001", description = "block not found"),
 	})
-	ResponseEntity<StaticNoteDTO> getStaticNoteByPageId(
+	ResponseEntity<StaticNoteResponse> getStaticNoteByPageId(
 			@PathVariable("id") Integer id
 	);
 

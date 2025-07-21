@@ -2,11 +2,12 @@ package com.nhaqua23.jotion.service.impl;
 
 import com.nhaqua23.jotion.dto.AuthDTO;
 import com.nhaqua23.jotion.dto.IntrospectDTO;
-import com.nhaqua23.jotion.dto.UserDTO;
+import com.nhaqua23.jotion.dto.user.UserResponse;
 import com.nhaqua23.jotion.exception.AppException;
 import com.nhaqua23.jotion.exception.EntityAlreadyExistsException;
 import com.nhaqua23.jotion.exception.EntityNotFoundException;
 import com.nhaqua23.jotion.exception.ErrorCode;
+import com.nhaqua23.jotion.mapper.UserMapper;
 import com.nhaqua23.jotion.model.User;
 import com.nhaqua23.jotion.model.UserRole;
 import com.nhaqua23.jotion.model.Workspace;
@@ -18,6 +19,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class AuthServiceImpl implements AuthService {
 
@@ -45,12 +48,14 @@ public class AuthServiceImpl implements AuthService {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
+	private final UserMapper userMapper;
+
 	@NonFinal
 	@Value("${jwt.signerKey}")
 	protected String SIGNER_KEY;
 
 	@Override
-	public AuthDTO login(UserDTO dto) {
+	public AuthDTO login(UserResponse dto) {
 		PasswordEncoder encoder = new BCryptPasswordEncoder(10);
 
 		User user = userRepository.findByEmail(dto.getEmail())
@@ -77,7 +82,7 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	@Override
-	public UserDTO signup(UserDTO dto) {
+	public UserResponse signup(UserResponse dto) {
 		if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
 			throw new EntityAlreadyExistsException(
 					"Email already exists.",
@@ -94,7 +99,7 @@ public class AuthServiceImpl implements AuthService {
 		userRepository.save(user);
 		createSharedWorkspace(user);
 
-		return UserDTO.toUserDTO(user);
+		return userMapper.toUserResponse(user);
 	}
 
 	private void createSharedWorkspace(User user) {

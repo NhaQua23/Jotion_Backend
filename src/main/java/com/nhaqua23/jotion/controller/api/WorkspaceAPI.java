@@ -1,6 +1,9 @@
 package com.nhaqua23.jotion.controller.api;
 
-import com.nhaqua23.jotion.dto.WorkspaceDTO;
+import com.nhaqua23.jotion.dto.response.CommonResponse;
+import com.nhaqua23.jotion.dto.workspace.CreateWorkspaceRequest;
+import com.nhaqua23.jotion.dto.workspace.UpdateWorkspaceRequest;
+import com.nhaqua23.jotion.dto.workspace.WorkspaceResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -29,8 +32,8 @@ public interface WorkspaceAPI {
 			@ApiResponse(responseCode = "1001", description = "User not found"),
 			@ApiResponse(responseCode = "2002", description = "Workspace not valid"),
 	})
-	ResponseEntity<WorkspaceDTO> createWorkspace(
-			@RequestBody WorkspaceDTO dto
+	ResponseEntity<CommonResponse<WorkspaceResponse>> createWorkspace(
+			@RequestBody CreateWorkspaceRequest request
 	);
 
 	@PatchMapping(
@@ -47,9 +50,9 @@ public interface WorkspaceAPI {
 			@ApiResponse(responseCode = "1002", description = "Workspace not found"),
 			@ApiResponse(responseCode = "2002", description = "Workspace not valid"),
 	})
-	ResponseEntity<WorkspaceDTO> updateWorkspace(
+	ResponseEntity<CommonResponse<WorkspaceResponse>> updateWorkspace(
 			@PathVariable("id") Integer id,
-			@RequestBody WorkspaceDTO dto
+			@RequestBody UpdateWorkspaceRequest request
 	);
 
 	@GetMapping(
@@ -63,7 +66,7 @@ public interface WorkspaceAPI {
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Workspaces retrieved successfully"),
 	})
-	ResponseEntity<List<WorkspaceDTO>> getAllWorkspaces();
+	ResponseEntity<CommonResponse<WorkspaceResponse>> getAllWorkspaces();
 
 	@GetMapping(
 			value = "/workspaces/{id}",
@@ -77,7 +80,7 @@ public interface WorkspaceAPI {
 			@ApiResponse(responseCode = "200", description = "Workspace retrieved successfully"),
 			@ApiResponse(responseCode = "1002", description = "Workspace not found"),
 	})
-	ResponseEntity<WorkspaceDTO> getWorkspaceById(
+	ResponseEntity<CommonResponse<WorkspaceResponse>> getWorkspaceById(
 			@PathVariable("id") Integer id
 	);
 
@@ -93,7 +96,7 @@ public interface WorkspaceAPI {
 			@ApiResponse(responseCode = "200", description = "Workspaces retrieved successfully"),
 			@ApiResponse(responseCode = "1001", description = "User not found"),
 	})
-	ResponseEntity<List<WorkspaceDTO>> getAllWorkspacesByUserId(
+	ResponseEntity<CommonResponse<WorkspaceResponse>> getAllWorkspacesByUserId(
 			@PathVariable("id") Integer userId
 	);
 
@@ -109,7 +112,7 @@ public interface WorkspaceAPI {
 			@ApiResponse(responseCode = "204", description = "Workspace deleted successfully"),
 			@ApiResponse(responseCode = "1002", description = "Workspace not found"),
 	})
-	ResponseEntity deleteWorkspaceById(
+	ResponseEntity<CommonResponse<WorkspaceResponse>> deleteWorkspaceById(
 			@PathVariable("id") Integer id
 	);
 }

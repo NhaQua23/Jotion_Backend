@@ -1,18 +1,20 @@
 package com.nhaqua23.jotion.service.impl;
 
-import com.nhaqua23.jotion.dto.PageDTO;
+import com.nhaqua23.jotion.dto.page.CreatePageRequest;
+import com.nhaqua23.jotion.dto.page.PageResponse;
+import com.nhaqua23.jotion.dto.page.UpdateBackgroundRequest;
+import com.nhaqua23.jotion.dto.page.UpdateTitleRequest;
 import com.nhaqua23.jotion.exception.EntityNotFoundException;
 import com.nhaqua23.jotion.exception.ErrorCode;
-import com.nhaqua23.jotion.exception.InvalidEntityException;
+import com.nhaqua23.jotion.mapper.PageMapper;
 import com.nhaqua23.jotion.model.*;
 import com.nhaqua23.jotion.repository.PageRepository;
 import com.nhaqua23.jotion.repository.SharedPageRepository;
 import com.nhaqua23.jotion.repository.UserRepository;
 import com.nhaqua23.jotion.repository.WorkspaceRepository;
 import com.nhaqua23.jotion.service.PageService;
-import com.nhaqua23.jotion.validator.PageValidator;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -20,64 +22,59 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class PageServiceImpl implements PageService {
 
-	@Autowired
-	private PageRepository pageRepository;
-
-	@Autowired
-	private WorkspaceRepository workspaceRepository;
-
-	@Autowired
-	private UserRepository userRepository;
-
-	@Autowired
-	private SharedPageRepository sharedPageRepository;
+	private final PageRepository pageRepository;
+	private final WorkspaceRepository workspaceRepository;
+	private final UserRepository userRepository;
+	private final SharedPageRepository sharedPageRepository;
+	private final PageMapper pageMapper;
 
 	@Override
-	public PageDTO save(PageDTO dto) {
-		List<String> errors = PageValidator.validatePage(dto);
-		if (!errors.isEmpty()) {
-			log.error(errors.toString());
-			throw new InvalidEntityException(
-					"Page is not valid",
-					ErrorCode.PAGE_NOT_VALID,
-					errors
-			);
-		}
+	public PageResponse save(CreatePageRequest request) {
+//		List<String> errors = PageValidator.validatePage(request);
+//		if (!errors.isEmpty()) {
+//			log.error(errors.toString());
+//			throw new InvalidEntityException(
+//					"Page is not valid",
+//					ErrorCode.PAGE_NOT_VALID,
+//					errors
+//			);
+//		}
 
-		User user = userRepository.findById(dto.getAuthorId())
+		User user = userRepository.findById(request.getAuthorId())
 				.orElseThrow(() -> new EntityNotFoundException(
-						"User not found with ID = " + dto.getAuthorId(),
+						"User not found with ID = " + request.getAuthorId(),
 						ErrorCode.USER_NOT_FOUND
 				));
-		Workspace workspace = workspaceRepository.findById(dto.getWorkspaceId())
+		Workspace workspace = workspaceRepository.findById(request.getWorkspaceId())
 				.orElseThrow(() -> new EntityNotFoundException(
-						"Workspace not found with ID = " + dto.getWorkspaceId(),
+						"Workspace not found with ID = " + request.getWorkspaceId(),
 						ErrorCode.WORKSPACE_NOT_FOUND
 				));
 
-		Page page = PageDTO.toPage(dto);
+		Page page = pageMapper.toPage(request);
 		page.setWorkspace(workspace);
 		page.setAuthor(user);
 		page.setCreatedAt(LocalDate.now());
 		page.setUpdatedAt(LocalDate.now());
 
-		return PageDTO.toPageDTO(pageRepository.save(page));
+		return pageMapper.toPageResponse(pageRepository.save(page));
 	}
 
 	@Override
-	public PageDTO update(Integer id, PageDTO dto) {
-		List<String> errors = PageValidator.validatePage(dto);
-		if (!errors.isEmpty()) {
-			log.error(errors.toString());
-			throw new InvalidEntityException(
-					"Page is not valid",
-					ErrorCode.PAGE_NOT_VALID,
-					errors
-			);
-		}
+	public PageResponse update(Integer id, UpdateTitleRequest request) {
+//		List<String> errors = PageValidator.validatePage(request);
+//		if (!errors.isEmpty()) {
+//			log.error(errors.toString());
+//			throw new InvalidEntityException(
+//					"Page is not valid",
+//					ErrorCode.PAGE_NOT_VALID,
+//					errors
+//			);
+//		}
 
 		Boolean isSharedPage = sharedPageRepository.existsByPageId(id);
 		if (isSharedPage) {
@@ -86,9 +83,9 @@ public class PageServiceImpl implements PageService {
 							"Page not found with id: " + id,
 							ErrorCode.PAGE_NOT_FOUND
 					));
-			User user = userRepository.findById(dto.getAuthorId())
+			User user = userRepository.findById(request.getAuthorId())
 					.orElseThrow(() -> new EntityNotFoundException(
-							"User not found with id: " + dto.getAuthorId(),
+							"User not found with id: " + request.getAuthorId(),
 							ErrorCode.USER_NOT_FOUND
 					));
 			SharedPage sharedPage = sharedPageRepository.findByUserAndPage(user, page)
@@ -99,7 +96,7 @@ public class PageServiceImpl implements PageService {
 
 			if (!sharedPage.getRole().equals(UserRole.OWNER) &&
 					!sharedPage.getRole().equals(UserRole.COLLABORATOR)) {
-				return new PageDTO();
+				return new PageResponse();
 			}
 		}
 
@@ -109,15 +106,14 @@ public class PageServiceImpl implements PageService {
 						ErrorCode.PAGE_NOT_FOUND
 				));
 
-		page.setTitle(dto.getTitle());
-//		page.setBackground(dto.getBackground());
+		page.setTitle(request.getTitle());
 		page.setUpdatedAt(LocalDate.now());
 
-		return PageDTO.toPageDTO(pageRepository.save(page));
+		return pageMapper.toPageResponse(pageRepository.save(page));
 	}
 
 	@Override
-	public PageDTO updateBackground(Integer id, PageDTO dto) {
+	public PageResponse updateBackground(Integer id, UpdateBackgroundRequest request) {
 		Boolean isSharedPage = sharedPageRepository.existsByPageId(id);
 		if (isSharedPage) {
 			Page page = pageRepository.findById(id)
@@ -125,9 +121,9 @@ public class PageServiceImpl implements PageService {
 							"Page not found with id: " + id,
 							ErrorCode.PAGE_NOT_FOUND
 					));
-			User user = userRepository.findById(dto.getAuthorId())
+			User user = userRepository.findById(request.getAuthorId())
 					.orElseThrow(() -> new EntityNotFoundException(
-							"User not found with id: " + dto.getAuthorId(),
+							"User not found with id: " + request.getAuthorId(),
 							ErrorCode.USER_NOT_FOUND
 					));
 			SharedPage sharedPage = sharedPageRepository.findByUserAndPage(user, page)
@@ -138,7 +134,7 @@ public class PageServiceImpl implements PageService {
 
 			if (!sharedPage.getRole().equals(UserRole.OWNER) &&
 					!sharedPage.getRole().equals(UserRole.COLLABORATOR)) {
-				return new PageDTO();
+				return new PageResponse();
 			}
 		}
 
@@ -148,22 +144,22 @@ public class PageServiceImpl implements PageService {
 						ErrorCode.PAGE_NOT_FOUND
 				));
 
-		page.setBackground(dto.getBackground());
+		page.setBackground(request.getBackground());
 		page.setUpdatedAt(LocalDate.now());
 
-		return PageDTO.toPageDTO(pageRepository.save(page));
+		return pageMapper.toPageResponse(pageRepository.save(page));
 	}
 
 	@Override
-	public List<PageDTO> getAll() {
+	public List<PageResponse> getAll() {
 		return pageRepository.findAll().stream()
-				.map(PageDTO::toPageDTO).collect(Collectors.toList());
+				.map(pageMapper::toPageResponse).collect(Collectors.toList());
 	}
 
 	@Override
-	public PageDTO getById(Integer id) {
+	public PageResponse getById(Integer id) {
 		return pageRepository.findById(id)
-				.map(PageDTO::toPageDTO)
+				.map(pageMapper::toPageResponse)
 				.orElseThrow(() -> new EntityNotFoundException("" +
 						"Page not found with ID = " + id,
 						ErrorCode.PAGE_NOT_FOUND
@@ -171,15 +167,15 @@ public class PageServiceImpl implements PageService {
 	}
 
 	@Override
-	public List<PageDTO> getAllByWorkspaceId(Integer workspaceId) {
+	public List<PageResponse> getAllByWorkspaceId(Integer workspaceId) {
 		return pageRepository.findPageByWorkspaceId(workspaceId).stream()
-				.map(PageDTO::toPageDTO).collect(Collectors.toList());
+				.map(pageMapper::toPageResponse).collect(Collectors.toList());
 	}
 
 	@Override
-	public List<PageDTO> getAllByAuthorId(Integer authorId) {
+	public List<PageResponse> getAllByAuthorId(Integer authorId) {
 		return pageRepository.findPageByAuthorId(authorId).stream()
-				.map(PageDTO::toPageDTO).collect(Collectors.toList());
+				.map(pageMapper::toPageResponse).collect(Collectors.toList());
 	}
 
 //	@Override

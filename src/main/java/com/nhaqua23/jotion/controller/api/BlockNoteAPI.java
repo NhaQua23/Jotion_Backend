@@ -1,6 +1,6 @@
 package com.nhaqua23.jotion.controller.api;
 
-import com.nhaqua23.jotion.dto.BlockNoteDTO;
+import com.nhaqua23.jotion.dto.response.BlockNoteResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -28,8 +28,8 @@ public interface BlockNoteAPI {
 			@ApiResponse(responseCode = "201", description = "block created successfully"),
 			@ApiResponse(responseCode = "2001", description = "block not valid"),
 	})
-	ResponseEntity<BlockNoteDTO> createNote(
-			@RequestBody BlockNoteDTO dto
+	ResponseEntity<BlockNoteResponse> createNote(
+			@RequestBody BlockNoteResponse dto
 	);
 
 	@PatchMapping(
@@ -46,9 +46,9 @@ public interface BlockNoteAPI {
 			@ApiResponse(responseCode = "1001", description = "block not found"),
 			@ApiResponse(responseCode = "2001", description = "block not valid"),
 	})
-	ResponseEntity<BlockNoteDTO> updateNote(
+	ResponseEntity<BlockNoteResponse> updateNote(
 			@PathVariable("id") Integer id,
-			@RequestBody BlockNoteDTO dto
+			@RequestBody BlockNoteResponse dto
 	);
 
 	@GetMapping(
@@ -62,7 +62,7 @@ public interface BlockNoteAPI {
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "blocks retrieved successfully"),
 	})
-	ResponseEntity<List<BlockNoteDTO>> getAllNotes();
+	ResponseEntity<List<BlockNoteResponse>> getAllNotes();
 
 	@GetMapping(
 			value = "/notes/{id}",
@@ -76,7 +76,7 @@ public interface BlockNoteAPI {
 			@ApiResponse(responseCode = "200", description = "block retrieved successfully"),
 			@ApiResponse(responseCode = "1001", description = "block not found"),
 	})
-	ResponseEntity<BlockNoteDTO> getNoteById(
+	ResponseEntity<BlockNoteResponse> getNoteById(
 			@PathVariable("id") Integer id
 	);
 
@@ -92,7 +92,7 @@ public interface BlockNoteAPI {
 			@ApiResponse(responseCode = "200", description = "block retrieved successfully"),
 			@ApiResponse(responseCode = "1001", description = "block not found"),
 	})
-	ResponseEntity<BlockNoteDTO> getNoteByPageId(
+	ResponseEntity<BlockNoteResponse> getNoteByPageId(
 			@PathVariable("id") Integer id
 	);
 

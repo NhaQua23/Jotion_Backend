@@ -1,4 +1,4 @@
-package com.nhaqua23.jotion.dto;
+package com.nhaqua23.jotion.dto.response;
 
 import com.nhaqua23.jotion.exception.ErrorCode;
 import lombok.Builder;
@@ -8,8 +8,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class ErrorDTO {
-
+public class ErrorResponse {
 	private Integer httpStatusCode;
 	private ErrorCode errorCode;
 	private String message;
