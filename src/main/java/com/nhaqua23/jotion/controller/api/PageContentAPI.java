@@ -1,6 +1,6 @@
 package com.nhaqua23.jotion.controller.api;
 
-import com.nhaqua23.jotion.dto.response.BlockNoteResponse;
+import com.nhaqua23.jotion.dto.response.PageContentResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -13,7 +13,7 @@ import java.util.List;
 
 @Tag(name = "BlockNote", description = "BlockNote management APIs")
 @RequestMapping("/api")
-public interface BlockNoteAPI {
+public interface PageContentAPI {
 
 	@PostMapping(
 			value = "/notes",
@@ -28,8 +28,8 @@ public interface BlockNoteAPI {
 			@ApiResponse(responseCode = "201", description = "block created successfully"),
 			@ApiResponse(responseCode = "2001", description = "block not valid"),
 	})
-	ResponseEntity<BlockNoteResponse> createNote(
-			@RequestBody BlockNoteResponse dto
+	ResponseEntity<PageContentResponse> createNote(
+			@RequestBody PageContentResponse dto
 	);
 
 	@PatchMapping(
@@ -46,9 +46,9 @@ public interface BlockNoteAPI {
 			@ApiResponse(responseCode = "1001", description = "block not found"),
 			@ApiResponse(responseCode = "2001", description = "block not valid"),
 	})
-	ResponseEntity<BlockNoteResponse> updateNote(
+	ResponseEntity<PageContentResponse> updateNote(
 			@PathVariable("id") Integer id,
-			@RequestBody BlockNoteResponse dto
+			@RequestBody PageContentResponse dto
 	);
 
 	@GetMapping(
@@ -62,7 +62,7 @@ public interface BlockNoteAPI {
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "blocks retrieved successfully"),
 	})
-	ResponseEntity<List<BlockNoteResponse>> getAllNotes();
+	ResponseEntity<List<PageContentResponse>> getAllNotes();
 
 	@GetMapping(
 			value = "/notes/{id}",
@@ -76,7 +76,7 @@ public interface BlockNoteAPI {
 			@ApiResponse(responseCode = "200", description = "block retrieved successfully"),
 			@ApiResponse(responseCode = "1001", description = "block not found"),
 	})
-	ResponseEntity<BlockNoteResponse> getNoteById(
+	ResponseEntity<PageContentResponse> getNoteById(
 			@PathVariable("id") Integer id
 	);
 
@@ -92,7 +92,7 @@ public interface BlockNoteAPI {
 			@ApiResponse(responseCode = "200", description = "block retrieved successfully"),
 			@ApiResponse(responseCode = "1001", description = "block not found"),
 	})
-	ResponseEntity<BlockNoteResponse> getNoteByPageId(
+	ResponseEntity<PageContentResponse> getNoteByPageId(
 			@PathVariable("id") Integer id
 	);
 

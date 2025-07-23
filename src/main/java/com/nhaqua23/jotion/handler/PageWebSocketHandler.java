@@ -1,5 +1,6 @@
 package com.nhaqua23.jotion.handler;
 
+import org.springframework.lang.NonNull;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -14,12 +15,12 @@ public class PageWebSocketHandler extends TextWebSocketHandler {
 	private List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
 
 	@Override
-	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+	public void afterConnectionEstablished(@NonNull WebSocketSession session) throws Exception {
 		sessions.add(session);
 	}
 
 	@Override
-	public void handleTextMessage(WebSocketSession session, TextMessage message) throws IOException {
+	public void handleTextMessage(@NonNull WebSocketSession session, @NonNull TextMessage message) throws IOException {
 		String payload = message.getPayload();
 
 		for (WebSocketSession webSocketSession : sessions) {
@@ -30,11 +31,11 @@ public class PageWebSocketHandler extends TextWebSocketHandler {
 	}
 
 	@Override
-	public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+	public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull CloseStatus status) throws Exception {
 		sessions.remove(session);
 	}
 
-	public void broadcastUpdate(String updateMessage) {
+	public void broadcastUpdate(@NonNull String updateMessage) {
 		for (WebSocketSession session : sessions) {
 			try {
 				session.sendMessage(new TextMessage(updateMessage));

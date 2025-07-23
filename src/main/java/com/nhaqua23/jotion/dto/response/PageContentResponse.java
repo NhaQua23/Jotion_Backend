@@ -1,26 +1,26 @@
 package com.nhaqua23.jotion.dto.response;
 
-import com.nhaqua23.jotion.model.BlockNote;
+import com.nhaqua23.jotion.model.PageContent;
 import lombok.Data;
 
 @Data
-public class BlockNoteResponse {
+public class PageContentResponse {
 
 	private Integer id;
 	private String content;
 	private Integer pageId;
 	private Integer createdById;
 
-	public static BlockNote toBlockNote(BlockNoteResponse dto) {
-		final BlockNote note = new BlockNote();
+	public static PageContent toBlockNote(PageContentResponse dto) {
+		final PageContent note = new PageContent();
 
 		note.setContent(dto.getContent());
 
 		return note;
 	}
 
-	public static BlockNoteResponse toBlockNoteDTO(BlockNote note) {
-		final BlockNoteResponse dto = new BlockNoteResponse();
+	public static PageContentResponse toBlockNoteDTO(PageContent note) {
+		final PageContentResponse dto = new PageContentResponse();
 
 		dto.setId(note.getId());
 		dto.setContent(note.getContent());

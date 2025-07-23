@@ -1,6 +1,6 @@
 package com.nhaqua23.jotion.controller.api;
 
-import com.nhaqua23.jotion.dto.response.StaticNoteResponse;
+import com.nhaqua23.jotion.dto.response.NoteTemplateResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -13,7 +13,7 @@ import java.util.List;
 
 @Tag(name = "StaticNote", description = "StaticNote management APIs")
 @RequestMapping("/api")
-public interface StaticNoteAPI {
+public interface NoteTemplateAPI {
 
 	@PostMapping(
 			value = "/statics",
@@ -28,8 +28,8 @@ public interface StaticNoteAPI {
 			@ApiResponse(responseCode = "201", description = "block created successfully"),
 			@ApiResponse(responseCode = "2001", description = "block not valid"),
 	})
-	ResponseEntity<StaticNoteResponse> createStatic(
-			@RequestBody StaticNoteResponse dto
+	ResponseEntity<NoteTemplateResponse> createStatic(
+			@RequestBody NoteTemplateResponse dto
 	);
 
 	@GetMapping(
@@ -43,7 +43,7 @@ public interface StaticNoteAPI {
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "blocks retrieved successfully"),
 	})
-	ResponseEntity<List<StaticNoteResponse>> getAllStatics();
+	ResponseEntity<List<NoteTemplateResponse>> getAllStatics();
 
 	@GetMapping(
 			value = "/statics/{id}",
@@ -57,7 +57,7 @@ public interface StaticNoteAPI {
 			@ApiResponse(responseCode = "200", description = "block retrieved successfully"),
 			@ApiResponse(responseCode = "1001", description = "block not found"),
 	})
-	ResponseEntity<StaticNoteResponse> getStaticNoteById(
+	ResponseEntity<NoteTemplateResponse> getStaticNoteById(
 			@PathVariable("id") Integer id
 	);
 
@@ -73,7 +73,7 @@ public interface StaticNoteAPI {
 			@ApiResponse(responseCode = "200", description = "block retrieved successfully"),
 			@ApiResponse(responseCode = "1001", description = "block not found"),
 	})
-	ResponseEntity<StaticNoteResponse> getStaticNoteByPageId(
+	ResponseEntity<NoteTemplateResponse> getStaticNoteByPageId(
 			@PathVariable("id") Integer id
 	);
 

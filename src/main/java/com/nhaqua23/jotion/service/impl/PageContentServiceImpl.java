@@ -1,14 +1,14 @@
 package com.nhaqua23.jotion.service.impl;
 
-import com.nhaqua23.jotion.dto.response.BlockNoteResponse;
+import com.nhaqua23.jotion.dto.response.PageContentResponse;
 import com.nhaqua23.jotion.exception.EntityNotFoundException;
 import com.nhaqua23.jotion.exception.ErrorCode;
 import com.nhaqua23.jotion.model.*;
-import com.nhaqua23.jotion.repository.BlockNoteRepository;
+import com.nhaqua23.jotion.repository.PageContentRepository;
 import com.nhaqua23.jotion.repository.PageRepository;
 import com.nhaqua23.jotion.repository.SharedPageRepository;
 import com.nhaqua23.jotion.repository.UserRepository;
-import com.nhaqua23.jotion.service.BlockNoteService;
+import com.nhaqua23.jotion.service.PageContentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,10 +18,10 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class BlockNoteServiceImpl implements BlockNoteService {
+public class PageContentServiceImpl implements PageContentService {
 
 	@Autowired
-	private BlockNoteRepository blockNoteRepository;
+	private PageContentRepository blockNoteRepository;
 
 	@Autowired
 	private PageRepository pageRepository;
@@ -35,7 +35,7 @@ public class BlockNoteServiceImpl implements BlockNoteService {
 //	private PageWebSocketHandler pageWebSocketHandler;
 
 	@Override
-	public BlockNoteResponse save(BlockNoteResponse dto) {
+	public PageContentResponse save(PageContentResponse dto) {
 		if (blockNoteRepository.findBlockNoteByPageId(dto.getPageId()) != null) {
 			Boolean isSharedPage = sharedPageRepository.existsByPageId(dto.getPageId());
 			if (isSharedPage) {
@@ -57,17 +57,17 @@ public class BlockNoteServiceImpl implements BlockNoteService {
 
 				if (!sharedPage.getRole().equals(UserRole.OWNER) &&
 						!sharedPage.getRole().equals(UserRole.COLLABORATOR)) {
-					return new BlockNoteResponse();
+					return new PageContentResponse();
 				}
 			}
 
-			BlockNote note = blockNoteRepository.findBlockNoteByPageId(dto.getPageId());
+			PageContent note = blockNoteRepository.findBlockNoteByPageId(dto.getPageId());
 			note.setContent(dto.getContent());
 
 //			String updateMessage = "Page " + dto.getId() + " has been updated";
 //			pageWebSocketHandler.broadcastUpdate(updateMessage);
 
-			return BlockNoteResponse.toBlockNoteDTO(blockNoteRepository.save(note));
+			return PageContentResponse.toBlockNoteDTO(blockNoteRepository.save(note));
 		} else {
 			User user = userRepository.findById(dto.getCreatedById())
 					.orElseThrow(() -> new EntityNotFoundException(
@@ -80,17 +80,17 @@ public class BlockNoteServiceImpl implements BlockNoteService {
 							ErrorCode.PAGE_NOT_FOUND
 					));
 
-			BlockNote note = BlockNoteResponse.toBlockNote(dto);
+			PageContent note = PageContentResponse.toBlockNote(dto);
 			note.setPage(page);
 			note.setCreatedBy(user);
 
-			return BlockNoteResponse.toBlockNoteDTO(blockNoteRepository.save(note));
+			return PageContentResponse.toBlockNoteDTO(blockNoteRepository.save(note));
 		}
 	}
 
 	@Override
-	public BlockNoteResponse update(Integer id, BlockNoteResponse dto) {
-		BlockNote note = blockNoteRepository.findById(id)
+	public PageContentResponse update(Integer id, PageContentResponse dto) {
+		PageContent note = blockNoteRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException(
 						"Block not found with ID = " + id,
 						ErrorCode.TEXT_NOT_FOUND
@@ -98,19 +98,19 @@ public class BlockNoteServiceImpl implements BlockNoteService {
 
 		note.setContent(dto.getContent());
 
-		return BlockNoteResponse.toBlockNoteDTO(blockNoteRepository.save(note));
+		return PageContentResponse.toBlockNoteDTO(blockNoteRepository.save(note));
 	}
 
 	@Override
-	public List<BlockNoteResponse> getAll() {
+	public List<PageContentResponse> getAll() {
 		return blockNoteRepository.findAll().stream()
-				.map(BlockNoteResponse::toBlockNoteDTO).collect(Collectors.toList());
+				.map(PageContentResponse::toBlockNoteDTO).collect(Collectors.toList());
 	}
 
 	@Override
-	public BlockNoteResponse getById(Integer id) {
+	public PageContentResponse getById(Integer id) {
 		return blockNoteRepository.findById(id)
-				.map(BlockNoteResponse::toBlockNoteDTO)
+				.map(PageContentResponse::toBlockNoteDTO)
 				.orElseThrow(() -> new EntityNotFoundException(
 						"Block not found with ID = " + id,
 						ErrorCode.TEXT_NOT_FOUND
@@ -118,25 +118,25 @@ public class BlockNoteServiceImpl implements BlockNoteService {
 	}
 
 	@Override
-	public List<BlockNoteResponse> getAllByPageId(Integer pageId) {
+	public List<PageContentResponse> getAllByPageId(Integer pageId) {
 		return blockNoteRepository.findBlockNotesByPageId(pageId).stream()
-				.map(BlockNoteResponse::toBlockNoteDTO).collect(Collectors.toList());
+				.map(PageContentResponse::toBlockNoteDTO).collect(Collectors.toList());
 	}
 
 	@Override
-	public BlockNoteResponse getByPageId(Integer pageId) {
-		BlockNote note = blockNoteRepository.findBlockNoteByPageId(pageId);
+	public PageContentResponse getByPageId(Integer pageId) {
+		PageContent note = blockNoteRepository.findBlockNoteByPageId(pageId);
 
 		if (note == null) {
-			return new BlockNoteResponse();
+			return new PageContentResponse();
 		}
 
-		return BlockNoteResponse.toBlockNoteDTO(note);
+		return PageContentResponse.toBlockNoteDTO(note);
 	}
 
 	@Override
 	public void delete(Integer id) {
-		BlockNote note = blockNoteRepository.findById(id)
+		PageContent note = blockNoteRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException(
 						"Block not found with ID = " + id,
 						ErrorCode.TEXT_NOT_FOUND

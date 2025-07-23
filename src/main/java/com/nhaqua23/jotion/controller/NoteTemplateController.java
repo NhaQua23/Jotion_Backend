@@ -1,8 +1,8 @@
 package com.nhaqua23.jotion.controller;
 
-import com.nhaqua23.jotion.controller.api.StaticNoteAPI;
-import com.nhaqua23.jotion.dto.response.StaticNoteResponse;
-import com.nhaqua23.jotion.service.StaticNoteService;
+import com.nhaqua23.jotion.controller.api.NoteTemplateAPI;
+import com.nhaqua23.jotion.dto.response.NoteTemplateResponse;
+import com.nhaqua23.jotion.service.NoteTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,28 +11,28 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-public class StaticNoteController implements StaticNoteAPI {
+public class NoteTemplateController implements NoteTemplateAPI {
 
 	@Autowired
-	private StaticNoteService service;
+	private NoteTemplateService service;
 
 	@Override
-	public ResponseEntity<StaticNoteResponse> createStatic(StaticNoteResponse dto) {
+	public ResponseEntity<NoteTemplateResponse> createStatic(NoteTemplateResponse dto) {
 		return new ResponseEntity<>(service.save(dto), HttpStatus.CREATED);
 	}
 
 	@Override
-	public ResponseEntity<List<StaticNoteResponse>> getAllStatics() {
+	public ResponseEntity<List<NoteTemplateResponse>> getAllStatics() {
 		return new ResponseEntity<>(service.getAll(), HttpStatus.OK);
 	}
 
 	@Override
-	public ResponseEntity<StaticNoteResponse> getStaticNoteById(Integer id) {
+	public ResponseEntity<NoteTemplateResponse> getStaticNoteById(Integer id) {
 		return new ResponseEntity<>(service.getById(id), HttpStatus.OK);
 	}
 
 	@Override
-	public ResponseEntity<StaticNoteResponse> getStaticNoteByPageId(Integer id) {
+	public ResponseEntity<NoteTemplateResponse> getStaticNoteByPageId(Integer id) {
 		return new ResponseEntity<>(service.getByPageId(id), HttpStatus.OK);
 	}
 

@@ -43,7 +43,7 @@ public class Page {
 			orphanRemoval = true
 	)
 	@JsonManagedReference
-	private List<BlockNote> blockNotes = new ArrayList<>();
+	private List<PageContent> blockNotes = new ArrayList<>();
 
 	@OneToMany(
 			mappedBy = "page",
@@ -59,5 +59,5 @@ public class Page {
 			cascade = CascadeType.ALL,
 			orphanRemoval = true
 	)
-	private List<StaticNote> staticNotes = new ArrayList<>();
+	private List<NoteTemplate> staticNotes = new ArrayList<>();
 }

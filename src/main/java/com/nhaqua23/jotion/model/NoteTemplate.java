@@ -1,13 +1,12 @@
 package com.nhaqua23.jotion.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "blocknotes")
+@Table(name = "staticNotes")
 @Data
-public class BlockNote {
+public class NoteTemplate {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,12 +16,10 @@ public class BlockNote {
 	private String content;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "page_id")
-	@JsonBackReference
-	private Page page;
+	@JoinColumn(name = "user_id")
+	private User user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "created_by_id")
-	@JsonBackReference
-	private User createdBy;
+	@JoinColumn(name = "page_id")
+	private Page page;
 }
