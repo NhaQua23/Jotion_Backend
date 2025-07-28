@@ -51,7 +51,7 @@ public class User {
 			orphanRemoval = true
 	)
 	@JsonManagedReference
-	private List<PageContent> blockNotes = new ArrayList<>();
+	private List<PageContent> pageContents = new ArrayList<>();
 
 	@OneToMany(
 			mappedBy = "user",
@@ -60,7 +60,7 @@ public class User {
 			orphanRemoval = true
 	)
 	@JsonManagedReference
-	private List<NoteTemplate> staticNotes = new ArrayList<>();
+	private List<NoteTemplate> noteTemplates = new ArrayList<>();
 
 	@OneToMany(
 			mappedBy = "user",

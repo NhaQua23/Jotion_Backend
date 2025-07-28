@@ -1,21 +1,34 @@
 package com.nhaqua23.jotion.service;
 
-import com.nhaqua23.jotion.dto.page.PageResponse;
-import com.nhaqua23.jotion.dto.response.SharedPageResponse;
-
 import java.util.List;
+
+import com.nhaqua23.jotion.dto.shared.RevokePageAccessRequest;
+import com.nhaqua23.jotion.dto.shared.SharePageRequest;
+import com.nhaqua23.jotion.dto.shared.SharedPageResponse;
+import com.nhaqua23.jotion.dto.shared.UnsharePageRequest;
+import com.nhaqua23.jotion.dto.shared.UpdateUserRoleRequest;
 
 public interface SharedPageService {
 
-	SharedPageResponse sharePage(SharedPageResponse dto);
+	SharedPageResponse sharePage(SharePageRequest request);
 
-	SharedPageResponse unSharePage(SharedPageResponse dto);
+	SharedPageResponse unSharePage(UnsharePageRequest request);
 
-	List<SharedPageResponse> getAll();
+	List<SharedPageResponse> getAllSharedPages();
 
 	SharedPageResponse getById(Integer id);
 
-	List<SharedPageResponse> getAllByUserId(Integer userId);
+	List<SharedPageResponse> getSharedPagesByUserId(Integer userId);
 
-	List<PageResponse> getAllPagesByUserId(Integer userId);
+	List<SharedPageResponse> getPageCollaborators(Integer pageId);
+
+	boolean hasPageAccess(Integer userId, Integer pageId);
+
+	boolean canEditPage(Integer userId, Integer pageId);
+
+	boolean canSharePage(Integer userId, Integer pageId);
+
+	SharedPageResponse revokePageAccess(RevokePageAccessRequest request);
+
+	SharedPageResponse updateUserRole(UpdateUserRoleRequest request);
 }

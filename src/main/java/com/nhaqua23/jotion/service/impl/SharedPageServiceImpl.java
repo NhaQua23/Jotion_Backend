@@ -1,10 +1,23 @@
 package com.nhaqua23.jotion.service.impl;
 
-import com.nhaqua23.jotion.dto.page.PageResponse;
-import com.nhaqua23.jotion.dto.response.SharedPageResponse;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.nhaqua23.jotion.dto.shared.RevokePageAccessRequest;
+import com.nhaqua23.jotion.dto.shared.SharePageRequest;
+import com.nhaqua23.jotion.dto.shared.SharedPageResponse;
+import com.nhaqua23.jotion.dto.shared.UnsharePageRequest;
+import com.nhaqua23.jotion.dto.shared.UpdateUserRoleRequest;
 import com.nhaqua23.jotion.exception.EntityNotFoundException;
 import com.nhaqua23.jotion.exception.ErrorCode;
+import com.nhaqua23.jotion.mapper.SharedPageMapper;
 import com.nhaqua23.jotion.model.Page;
+import com.nhaqua23.jotion.model.ShareStatus;
 import com.nhaqua23.jotion.model.SharedPage;
 import com.nhaqua23.jotion.model.User;
 import com.nhaqua23.jotion.model.UserRole;
@@ -12,132 +25,317 @@ import com.nhaqua23.jotion.repository.PageRepository;
 import com.nhaqua23.jotion.repository.SharedPageRepository;
 import com.nhaqua23.jotion.repository.UserRepository;
 import com.nhaqua23.jotion.service.SharedPageService;
-import jakarta.persistence.EntityExistsException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import jakarta.persistence.EntityExistsException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
+@Transactional
 public class SharedPageServiceImpl implements SharedPageService {
 
-	@Autowired
-	private SharedPageRepository sharedPageRepository;
-
-	@Autowired
-	private PageRepository pageRepository;
-
-	@Autowired
-	private UserRepository userRepository;
+	private final SharedPageRepository sharedPageRepository;
+	private final PageRepository pageRepository;
+	private final UserRepository userRepository;
+	private final SharedPageMapper sharedPageMapper;
 
 	@Override
-	public SharedPageResponse sharePage(SharedPageResponse dto) {
-		Page page = pageRepository.findById(dto.getPageId())
-				.orElseThrow(() -> new EntityNotFoundException(
-						"Page not found with id: " + dto.getPageId(),
-						ErrorCode.PAGE_NOT_FOUND
-				));
-		User user = userRepository.findByEmail(dto.getEmail())
-				.orElseThrow(() -> new EntityNotFoundException(
-						"User not found with email: " + dto.getEmail(),
-						ErrorCode.USER_NOT_FOUND
-				));
-		User author = userRepository.findByEmail(dto.getEmailAuthor())
-				.orElseThrow(() -> new EntityNotFoundException(
-						"Author not found with email: " + dto.getEmailAuthor(),
-						ErrorCode.USER_NOT_FOUND
-				));
+	public SharedPageResponse sharePage(SharePageRequest request) {
+		log.info("Sharing page {} with user {}", request.getPageId(), request.getUserEmail());
 
-		if (!page.getAuthor().equals(author) && !dto.getRole().equals(UserRole.OWNER)) {
-			throw new EntityExistsException("Current user does not have access to share this page.");
-		}
-
-//		Optional<SharedPage> existingSharedPage = sharedPageRepository.findByUserAndPage(user, page);
-//		if (existingSharedPage.isPresent()) {
-//			throw new EntityExistsException("Shared page already exists");
-//		}
-
-		if (!sharedPageRepository.existsByUserAndPage(author, page)) {
-			SharedPage sharedPageOwner = new SharedPage();
-			sharedPageOwner.setUser(author);
-			sharedPageOwner.setPage(page);
-			sharedPageOwner.setRole(UserRole.OWNER);
-			sharedPageRepository.save(sharedPageOwner);
-		}
-
-		SharedPage sharedPage = new SharedPage();
-		sharedPage.setUser(user);
-		sharedPage.setPage(page);
-		sharedPage.setRole(dto.getRole());
-
-		return SharedPageResponse.toSharedPageDTO(sharedPageRepository.save(sharedPage));
-	}
-
-	@Override
-	public SharedPageResponse unSharePage(SharedPageResponse dto) {
-		Page page = pageRepository.findById(dto.getPageId())
+		// Validate and fetch entities
+		Page page = pageRepository.findById(request.getPageId())
 				.orElseThrow(() -> new EntityNotFoundException(
-						"Page not found with id: " + dto.getPageId(),
-						ErrorCode.PAGE_NOT_FOUND
-				));
-		User author = userRepository.findByEmail(dto.getEmailAuthor())
-				.orElseThrow(() -> new EntityNotFoundException(
-						"Author not found with email: " + dto.getEmailAuthor(),
-						ErrorCode.USER_NOT_FOUND
-				));
-		SharedPage sharedPage = sharedPageRepository.findByUserAndPage(author, page)
-				.orElseThrow(() -> new EntityNotFoundException(
-						"Current user does not have access to unshared this page",
+						"Page not found with id: " + request.getPageId(),
 						ErrorCode.PAGE_NOT_FOUND
 				));
 
-		if (!sharedPage.getRole().equals(UserRole.OWNER)) {
-			throw new EntityExistsException("Current user does not have access to unshared this page.");
+		User targetUser = userRepository.findByEmail(request.getUserEmail())
+				.orElseThrow(() -> new EntityNotFoundException(
+						"User not found with email: " + request.getUserEmail(),
+						ErrorCode.USER_NOT_FOUND
+				));
+
+		User sharedByUser = userRepository.findById(request.getSharedByUserId())
+				.orElseThrow(() -> new EntityNotFoundException(
+						"Shared by user not found with id: " + request.getSharedByUserId(),
+						ErrorCode.USER_NOT_FOUND
+				));
+
+		// Check if the user requesting the share has permission
+		if (!canSharePage(request.getSharedByUserId(), request.getPageId())) {
+			throw new EntityExistsException("You don't have permission to share this page");
 		}
 
-		List<SharedPage> list = sharedPageRepository.findAllByPageId(dto.getPageId());
-		for (SharedPage shared : list) {
-			sharedPageRepository.delete(shared);
+		// Check if already actively shared with this user
+		if (sharedPageRepository.existsActiveShareByUserAndPage(targetUser, page)) {
+			throw new EntityExistsException("Page is already shared with this user");
 		}
 
-		return SharedPageResponse.toSharedPageDTO(sharedPage);
+		// Check if there's an existing share record (could be revoked/expired)
+		Optional<SharedPage> existingShare = sharedPageRepository.findByUserAndPage(targetUser, page);
+		
+		SharedPage sharedPage;
+		if (existingShare.isPresent()) {
+			// Reactivate existing share record
+			sharedPage = existingShare.get();
+			sharedPage.setRole(request.getRole());
+			sharedPage.setSharedBy(sharedByUser);
+			sharedPage.setStatus(ShareStatus.ACTIVE);
+			sharedPage.setSharedAt(LocalDateTime.now());
+			log.info("Reactivating existing share record for user {} on page {}", request.getUserEmail(), request.getPageId());
+		} else {
+			// Create owner record if it doesn't exist
+			ensureOwnerExists(page);
+
+			// Create new share record
+			sharedPage = new SharedPage();
+			sharedPage.setUser(targetUser);
+			sharedPage.setPage(page);
+			sharedPage.setRole(request.getRole());
+			sharedPage.setSharedBy(sharedByUser);
+			sharedPage.setStatus(ShareStatus.ACTIVE);
+			log.info("Creating new share record for user {} on page {}", request.getUserEmail(), request.getPageId());
+		}
+
+		SharedPage savedShare = sharedPageRepository.save(sharedPage);
+		log.info("Successfully shared page {} with user {}", request.getPageId(), request.getUserEmail());
+
+		return sharedPageMapper.toSharedPageResponse(savedShare);
 	}
 
 	@Override
-	public List<SharedPageResponse> getAll() {
-		return sharedPageRepository.findAll().stream()
-				.map(SharedPageResponse::toSharedPageDTO).collect(Collectors.toList());
+	public SharedPageResponse unSharePage(UnsharePageRequest request) {
+		log.info("Unsharing page {} from user {}", request.getPageId(), request.getUserEmail());
+
+		// Validate entities
+		Page page = pageRepository.findById(request.getPageId())
+				.orElseThrow(() -> new EntityNotFoundException(
+						"Page not found with id: " + request.getPageId(),
+						ErrorCode.PAGE_NOT_FOUND
+				));
+
+		User targetUser = userRepository.findByEmail(request.getUserEmail())
+				.orElseThrow(() -> new EntityNotFoundException(
+						"User not found with email: " + request.getUserEmail(),
+						ErrorCode.USER_NOT_FOUND
+				));
+
+		User requestedByUser = userRepository.findById(request.getRequestedByUserId())
+				.orElseThrow(() -> new EntityNotFoundException(
+						"Requested by user not found with id: " + request.getRequestedByUserId(),
+						ErrorCode.USER_NOT_FOUND
+				));
+
+		// Find the shared page record
+		SharedPage sharedPage = sharedPageRepository.findByUserAndPage(targetUser, page)
+				.orElseThrow(() -> new EntityNotFoundException(
+						"Page is not shared with this user",
+						ErrorCode.PAGE_NOT_FOUND
+				));
+
+		// Check permissions - only owner or the user themselves can unshare
+		boolean isOwner = page.getAuthor().getId().equals(request.getRequestedByUserId());
+		boolean isSelf = targetUser.getId().equals(request.getRequestedByUserId());
+		boolean hasOwnerRole = hasOwnerRole(request.getRequestedByUserId(), request.getPageId());
+
+		if (!isOwner && !isSelf && !hasOwnerRole) {
+			throw new EntityExistsException("You don't have permission to unshare this page");
+		}
+
+		// Prevent owner from being unshared
+		if (sharedPage.getRole() == UserRole.OWNER && !isSelf) {
+			throw new EntityExistsException("Cannot remove owner access");
+		}
+
+		// Mark as revoked instead of deleting for audit trail
+		sharedPage.setStatus(ShareStatus.REVOKED);
+		SharedPage updatedShare = sharedPageRepository.save(sharedPage);
+
+		log.info("Successfully unshared page {} from user {}", request.getPageId(), request.getUserEmail());
+		return sharedPageMapper.toSharedPageResponse(updatedShare);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public List<SharedPageResponse> getAllSharedPages() {
+		return sharedPageRepository.findAll()
+			.stream()
+			.map(sharedPageMapper::toSharedPageResponse)
+			.collect(Collectors.toList());
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public SharedPageResponse getById(Integer id) {
 		return sharedPageRepository.findById(id)
-				.map(SharedPageResponse::toSharedPageDTO)
-				.orElseThrow(() -> new EntityNotFoundException(
-						"Shared Page not found with id = " + id,
-						ErrorCode.PAGE_NOT_FOUND
-				));
+			.map(sharedPageMapper::toSharedPageResponse)
+			.orElseThrow(() -> new EntityNotFoundException(
+					"Shared Page not found with id = " + id,
+					ErrorCode.PAGE_NOT_FOUND
+			));
 	}
 
 	@Override
-	public List<SharedPageResponse> getAllByUserId(Integer userId) {
-		return sharedPageRepository.findAllByUserId(userId).stream()
-				.map(SharedPageResponse::toSharedPageDTO).collect(Collectors.toList());
+	@Transactional(readOnly = true)
+	public List<SharedPageResponse> getSharedPagesByUserId(Integer userId) {
+		return sharedPageRepository.findActiveSharesByUserId(userId, ShareStatus.ACTIVE)
+			.stream()
+			.map(sharedPageMapper::toSharedPageResponse)
+			.collect(Collectors.toList());
 	}
 
 	@Override
-	public List<PageResponse> getAllPagesByUserId(Integer userId) {
-		List<SharedPage> listSharedPages = sharedPageRepository.findAllByUserId(userId).stream()
-				.collect(Collectors.toList());
+	@Transactional(readOnly = true)
+	public List<SharedPageResponse> getPageCollaborators(Integer pageId) {
+		return sharedPageRepository.findActiveSharesByPageId(pageId, ShareStatus.ACTIVE)
+			.stream()
+			.map(sharedPageMapper::toSharedPageResponse)
+			.collect(Collectors.toList());
+	}
 
-		List<Page> listPages = new ArrayList<>();
-
-		for (SharedPage sharedPage : listSharedPages) {
-			listPages.add(sharedPage.getPage());
+	@Override
+	@Transactional(readOnly = true)
+	public boolean hasPageAccess(Integer userId, Integer pageId) {
+		// Check if user is the page author
+		Page page = pageRepository.findById(pageId)
+			.orElseThrow(() -> new EntityNotFoundException(
+					"Page not found with id: " + pageId,
+					ErrorCode.PAGE_NOT_FOUND
+			));
+		if (page.getAuthor().getId().equals(userId)) {
+			return true;
 		}
 
-		return listPages.stream().map(PageResponse::toPageDTO).collect(Collectors.toList());
+		// Check if user has active share
+		return sharedPageRepository.findActiveSharesByUserId(userId, ShareStatus.ACTIVE)
+			.stream()
+			.anyMatch(share -> share.getPage().getId().equals(pageId));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public boolean canEditPage(Integer userId, Integer pageId) {
+		// Check if user is the page author
+		Page page = pageRepository.findById(pageId)
+			.orElseThrow(() -> new EntityNotFoundException(
+					"Page not found with id: " + pageId,
+					ErrorCode.PAGE_NOT_FOUND
+			));
+		if (page.getAuthor().getId().equals(userId)) {
+			return true;
+		}
+
+		// Check if user has OWNER or COLLABORATOR role
+		return sharedPageRepository.findActiveSharesByUserId(userId, ShareStatus.ACTIVE)
+			.stream()
+			.filter(share -> share.getPage().getId().equals(pageId))
+			.anyMatch(share -> share.getRole().equals(UserRole.OWNER) || share.getRole().equals(UserRole.COLLABORATOR));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public boolean canSharePage(Integer userId, Integer pageId) {
+		// Check if user is the page author
+		Page page = pageRepository.findById(pageId)
+			.orElseThrow(() -> new EntityNotFoundException(
+					"Page not found with id: " + pageId,
+					ErrorCode.PAGE_NOT_FOUND
+			));
+
+		if (page.getAuthor().getId().equals(userId)) {
+			return true;
+		}
+
+		// Check if user has OWNER role in shared pages
+		return hasOwnerRole(userId, pageId);
+	}
+
+	@Override
+	public SharedPageResponse revokePageAccess(RevokePageAccessRequest request) {
+		Page page = pageRepository.findById(request.getPageId())
+			.orElseThrow(() -> new EntityNotFoundException(
+					"Page not found with id: " + request.getPageId(),
+					ErrorCode.PAGE_NOT_FOUND
+			));
+
+		User user = userRepository.findById(request.getUserId())
+			.orElseThrow(() -> new EntityNotFoundException(
+					"User not found with id: " + request.getUserId(),
+					ErrorCode.USER_NOT_FOUND
+			));
+
+		if (!canSharePage(request.getRevokedBy(), request.getPageId())) {
+			throw new EntityExistsException("You don't have permission to revoke access to this page");
+		}
+
+		SharedPage sharedPage = sharedPageRepository.findByUserAndPage(user, page)
+			.orElseThrow(() -> new EntityNotFoundException(
+					"Page is not shared with this user",
+					ErrorCode.PAGE_NOT_FOUND
+			));
+
+		// Mark as revoked instead of deleting for audit trail
+		sharedPage.setStatus(ShareStatus.REVOKED);
+		SharedPage updatedShare = sharedPageRepository.save(sharedPage);
+
+		log.info("Successfully revoked access to page {} for user {}", request.getPageId(), request.getUserId());
+		return sharedPageMapper.toSharedPageResponse(updatedShare);
+	}
+
+	@Override
+	public SharedPageResponse updateUserRole(UpdateUserRoleRequest request) {
+		Page page = pageRepository.findById(request.getPageId())
+			.orElseThrow(() -> new EntityNotFoundException(
+					"Page not found with id: " + request.getPageId(),
+					ErrorCode.PAGE_NOT_FOUND
+			));
+
+		User user = userRepository.findById(request.getUserId())
+			.orElseThrow(() -> new EntityNotFoundException(
+					"User not found with id: " + request.getUserId(),
+					ErrorCode.USER_NOT_FOUND
+			));
+
+		if (!canSharePage(request.getUpdatedBy(), request.getPageId())) {
+			throw new EntityExistsException("You don't have permission to update role for this page");
+		}
+
+		SharedPage sharedPage = sharedPageRepository.findByUserAndPage(user, page)
+			.orElseThrow(() -> new EntityNotFoundException(
+					"Page is not shared with this user",
+					ErrorCode.PAGE_NOT_FOUND
+			));
+
+		UserRole role = request.getRole();
+		sharedPage.setRole(role);
+
+		SharedPage updatedShare = sharedPageRepository.save(sharedPage);
+		return sharedPageMapper.toSharedPageResponse(updatedShare);
+	}
+
+	private void ensureOwnerExists(Page page) {
+		// Check if owner record exists
+		boolean ownerExists = sharedPageRepository.findByPageIdAndRoleAndStatus(
+			page.getId(), UserRole.OWNER, ShareStatus.ACTIVE
+		).stream().anyMatch(share -> share.getUser().getId().equals(page.getAuthor().getId()));
+
+		if (!ownerExists) {
+			SharedPage ownerShare = new SharedPage();
+			ownerShare.setUser(page.getAuthor());
+			ownerShare.setPage(page);
+			ownerShare.setRole(UserRole.OWNER);
+			ownerShare.setStatus(ShareStatus.ACTIVE);
+			ownerShare.setSharedBy(page.getAuthor());
+			sharedPageRepository.save(ownerShare);
+		}
+	}
+
+	private boolean hasOwnerRole(Integer userId, Integer pageId) {
+		return sharedPageRepository.findByPageIdAndRoleAndStatus(
+			pageId, UserRole.OWNER, ShareStatus.ACTIVE
+		).stream().anyMatch(share -> share.getUser().getId().equals(userId));
 	}
 }

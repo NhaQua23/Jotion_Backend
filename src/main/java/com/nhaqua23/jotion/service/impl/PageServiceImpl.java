@@ -1,5 +1,11 @@
 package com.nhaqua23.jotion.service.impl;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
 import com.nhaqua23.jotion.dto.page.CreatePageRequest;
 import com.nhaqua23.jotion.dto.page.PageResponse;
 import com.nhaqua23.jotion.dto.page.UpdateBackgroundRequest;
@@ -7,19 +13,19 @@ import com.nhaqua23.jotion.dto.page.UpdateTitleRequest;
 import com.nhaqua23.jotion.exception.EntityNotFoundException;
 import com.nhaqua23.jotion.exception.ErrorCode;
 import com.nhaqua23.jotion.mapper.PageMapper;
-import com.nhaqua23.jotion.model.*;
+import com.nhaqua23.jotion.model.Page;
+import com.nhaqua23.jotion.model.SharedPage;
+import com.nhaqua23.jotion.model.User;
+import com.nhaqua23.jotion.model.UserRole;
+import com.nhaqua23.jotion.model.Workspace;
 import com.nhaqua23.jotion.repository.PageRepository;
 import com.nhaqua23.jotion.repository.SharedPageRepository;
 import com.nhaqua23.jotion.repository.UserRepository;
 import com.nhaqua23.jotion.repository.WorkspaceRepository;
 import com.nhaqua23.jotion.service.PageService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -192,10 +198,10 @@ public class PageServiceImpl implements PageService {
 						ErrorCode.PAGE_NOT_FOUND
 				));
 
-		List<SharedPage> list = sharedPageRepository.findAllByPageId(id);
-		for (SharedPage shared : list) {
-			sharedPageRepository.delete(shared);
-		}
+		// List<SharedPage> list = sharedPageRepository.findAllByPageId(id);
+		// for (SharedPage shared : list) {
+		// 	sharedPageRepository.delete(shared);
+		// }
 
 //		for (Tag tag : page.getTags()) {
 //			tag.getPages().remove(page);

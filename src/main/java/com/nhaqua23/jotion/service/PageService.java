@@ -1,11 +1,11 @@
 package com.nhaqua23.jotion.service;
 
+import java.util.List;
+
 import com.nhaqua23.jotion.dto.page.CreatePageRequest;
 import com.nhaqua23.jotion.dto.page.PageResponse;
 import com.nhaqua23.jotion.dto.page.UpdateBackgroundRequest;
 import com.nhaqua23.jotion.dto.page.UpdateTitleRequest;
-
-import java.util.List;
 
 public interface PageService {
 
