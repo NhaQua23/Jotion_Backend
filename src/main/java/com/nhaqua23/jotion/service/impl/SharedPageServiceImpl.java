@@ -13,6 +13,8 @@ import com.nhaqua23.jotion.dto.shared.SharePageRequest;
 import com.nhaqua23.jotion.dto.shared.SharedPageResponse;
 import com.nhaqua23.jotion.dto.shared.UnsharePageRequest;
 import com.nhaqua23.jotion.dto.shared.UpdateUserRoleRequest;
+import com.nhaqua23.jotion.exception.AuthorizationException;
+import com.nhaqua23.jotion.exception.EntityAlreadyExistsException;
 import com.nhaqua23.jotion.exception.EntityNotFoundException;
 import com.nhaqua23.jotion.exception.ErrorCode;
 import com.nhaqua23.jotion.mapper.SharedPageMapper;
@@ -66,12 +68,12 @@ public class SharedPageServiceImpl implements SharedPageService {
 
 		// Check if the user requesting the share has permission
 		if (!canSharePage(request.getSharedByUserId(), request.getPageId())) {
-			throw new EntityExistsException("You don't have permission to share this page");
+			throw new AuthorizationException("You don't have permission to share this page", ErrorCode.SHARE_PERMISSION_DENIED);
 		}
 
 		// Check if already actively shared with this user
 		if (sharedPageRepository.existsActiveShareByUserAndPage(targetUser, page)) {
-			throw new EntityExistsException("Page is already shared with this user");
+			throw new EntityAlreadyExistsException("Page is already shared with this user", ErrorCode.PAGE_ALREADY_SHARED);
 		}
 
 		// Check if there's an existing share record (could be revoked/expired)
@@ -142,12 +144,12 @@ public class SharedPageServiceImpl implements SharedPageService {
 		boolean hasOwnerRole = hasOwnerRole(request.getRequestedByUserId(), request.getPageId());
 
 		if (!isOwner && !isSelf && !hasOwnerRole) {
-			throw new EntityExistsException("You don't have permission to unshare this page");
+			throw new AuthorizationException("You don't have permission to unshare this page", ErrorCode.UNSHARE_PERMISSION_DENIED);
 		}
 
 		// Prevent owner from being unshared
 		if (sharedPage.getRole() == UserRole.OWNER && !isSelf) {
-			throw new EntityExistsException("Cannot remove owner access");
+			throw new AuthorizationException("Cannot remove owner access", ErrorCode.OWNER_CANNOT_BE_REMOVED);
 		}
 
 		// Mark as revoked instead of deleting for audit trail
@@ -268,7 +270,7 @@ public class SharedPageServiceImpl implements SharedPageService {
 			));
 
 		if (!canSharePage(request.getRevokedBy(), request.getPageId())) {
-			throw new EntityExistsException("You don't have permission to revoke access to this page");
+			throw new AuthorizationException("You don't have permission to revoke access to this page", ErrorCode.UNSHARE_PERMISSION_DENIED);
 		}
 
 		SharedPage sharedPage = sharedPageRepository.findByUserAndPage(user, page)
@@ -300,7 +302,7 @@ public class SharedPageServiceImpl implements SharedPageService {
 			));
 
 		if (!canSharePage(request.getUpdatedBy(), request.getPageId())) {
-			throw new EntityExistsException("You don't have permission to update role for this page");
+			throw new AuthorizationException("You don't have permission to update role for this page", ErrorCode.ROLE_UPDATE_PERMISSION_DENIED);
 		}
 
 		SharedPage sharedPage = sharedPageRepository.findByUserAndPage(user, page)

@@ -1,9 +1,8 @@
 package com.nhaqua23.jotion.exception;
 
-public class EntityAlreadyExistsException extends RuntimeException {
+public class EntityAlreadyExistsException extends AppException {
 
-	private static final long serialVersionUID = 3L;
-	private ErrorCode errorCode;
+	private static final long serialVersionUID = 4L;
 
 	public EntityAlreadyExistsException(String message) {
 		super(message);
@@ -14,16 +13,10 @@ public class EntityAlreadyExistsException extends RuntimeException {
 	}
 
 	public EntityAlreadyExistsException(String message, ErrorCode errorCode) {
-		super(message);
-		this.errorCode = errorCode;
+		super(message, errorCode);
 	}
 
 	public EntityAlreadyExistsException(String message, Throwable cause, ErrorCode errorCode) {
-		super(message, cause);
-		this.errorCode = errorCode;
-	}
-
-	public ErrorCode getErrorCode() {
-		return errorCode;
+		super(message, cause, errorCode);
 	}
 }

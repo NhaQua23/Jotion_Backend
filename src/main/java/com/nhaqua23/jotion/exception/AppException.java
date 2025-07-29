@@ -2,8 +2,7 @@ package com.nhaqua23.jotion.exception;
 
 public class AppException extends RuntimeException {
 
-	private static final long serialVersionUID = 4L;
-
+	private static final long serialVersionUID = 1L;
 	private ErrorCode errorCode;
 
 	public AppException(String message) {
