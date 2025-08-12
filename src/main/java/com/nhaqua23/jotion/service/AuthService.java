@@ -1,7 +1,7 @@
 package com.nhaqua23.jotion.service;
 
-import com.nhaqua23.jotion.dto.AuthDTO;
-import com.nhaqua23.jotion.dto.IntrospectDTO;
+import com.nhaqua23.jotion.dto.auth.AuthDTO;
+import com.nhaqua23.jotion.dto.auth.IntrospectDTO;
 import com.nhaqua23.jotion.dto.user.UserResponse;
 import com.nimbusds.jose.JOSEException;
 

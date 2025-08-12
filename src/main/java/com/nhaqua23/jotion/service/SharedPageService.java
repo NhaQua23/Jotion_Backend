@@ -14,21 +14,21 @@ public interface SharedPageService {
 
 	SharedPageResponse unSharePage(UnsharePageRequest request);
 
-	List<SharedPageResponse> getAllSharedPages();
-
 	SharedPageResponse getById(Integer id);
+
+	List<SharedPageResponse> getAllSharedPages();
 
 	List<SharedPageResponse> getSharedPagesByUserId(Integer userId);
 
 	List<SharedPageResponse> getPageCollaborators(Integer pageId);
+
+	SharedPageResponse updateUserRole(UpdateUserRoleRequest request);
+	
+	SharedPageResponse revokePageAccess(RevokePageAccessRequest request);
 
 	boolean hasPageAccess(Integer userId, Integer pageId);
 
 	boolean canEditPage(Integer userId, Integer pageId);
 
 	boolean canSharePage(Integer userId, Integer pageId);
-
-	SharedPageResponse revokePageAccess(RevokePageAccessRequest request);
-
-	SharedPageResponse updateUserRole(UpdateUserRoleRequest request);
 }

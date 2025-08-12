@@ -1,25 +1,23 @@
 package com.nhaqua23.jotion.service.impl;
 
-import com.nhaqua23.jotion.dto.workspace.CreateWorkspaceRequest;
-import com.nhaqua23.jotion.dto.workspace.UpdateWorkspaceRequest;
-import com.nhaqua23.jotion.dto.workspace.WorkspaceResponse;
-import com.nhaqua23.jotion.exception.EntityNotFoundException;
-import com.nhaqua23.jotion.exception.ErrorCode;
-import com.nhaqua23.jotion.exception.InvalidEntityException;
-import com.nhaqua23.jotion.mapper.WorkspaceMapper;
-import com.nhaqua23.jotion.model.User;
-import com.nhaqua23.jotion.model.Workspace;
-import com.nhaqua23.jotion.repository.UserRepository;
-import com.nhaqua23.jotion.repository.WorkspaceRepository;
-import com.nhaqua23.jotion.service.WorkspaceService;
-import com.nhaqua23.jotion.validator.WorkspaceValidator;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.nhaqua23.jotion.dto.workspace.CreateWorkspaceRequest;
+import com.nhaqua23.jotion.dto.workspace.UpdateWorkspaceRequest;
+import com.nhaqua23.jotion.dto.workspace.WorkspaceResponse;
+import com.nhaqua23.jotion.mapper.WorkspaceMapper;
+import com.nhaqua23.jotion.model.User;
+import com.nhaqua23.jotion.model.Workspace;
+import com.nhaqua23.jotion.repository.WorkspaceRepository;
+import com.nhaqua23.jotion.service.WorkspaceService;
+import com.nhaqua23.jotion.support.fetcher.EntityFetcher;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -27,8 +25,8 @@ import java.util.stream.Collectors;
 public class WorkspaceServiceImpl implements WorkspaceService {
 
 	private final WorkspaceRepository workspaceRepository;
-	private final UserRepository userRepository;
 	private final WorkspaceMapper workspaceMapper;
+	private final EntityFetcher entityFetcher;
 
 	@Override
 	public WorkspaceResponse save(CreateWorkspaceRequest request) {
@@ -42,11 +40,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 //			);
 //		}
 
-		User user = userRepository.findById(request.getUserId())
-				.orElseThrow(() -> new EntityNotFoundException(
-						"User not found with ID = " + request.getUserId(),
-						ErrorCode.USER_NOT_FOUND
-				));
+		User user = entityFetcher.getUserById(request.getUserId());
 
 		Workspace workspace = workspaceMapper.toWorkspace(request);
 		workspace.setUser(user);
@@ -69,11 +63,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 //			);
 //		}
 
-		Workspace workspace = workspaceRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException(
-						"Workspace not found with ID = " + id,
-						ErrorCode.WORKSPACE_NOT_FOUND
-				));
+		Workspace workspace = entityFetcher.getWorkspaceById(id);
 
 //		if (!workspace.isEditable()) {
 //			throw new InvalidEntityException(
@@ -97,12 +87,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
 	@Override
 	public WorkspaceResponse getById(Integer id) {
-		return workspaceRepository.findById(id)
-				.map(workspaceMapper::toWorkspaceResponse)
-				.orElseThrow(() -> new EntityNotFoundException(
-						"Workspace not found with ID = " + id,
-						ErrorCode.WORKSPACE_NOT_FOUND
-				));
+		return workspaceMapper.toWorkspaceResponse(entityFetcher.getWorkspaceById(id));
 	}
 
 	@Override
@@ -113,12 +98,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
 	@Override
 	public void delete(Integer id) {
-		Workspace workspace = workspaceRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException(
-						"Workspace not found with ID = " + id,
-						ErrorCode.WORKSPACE_NOT_FOUND
-				));
-
+		Workspace workspace = entityFetcher.getWorkspaceById(id);
 		workspaceRepository.delete(workspace);
 	}
 }

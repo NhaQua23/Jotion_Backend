@@ -10,8 +10,6 @@ import com.nhaqua23.jotion.dto.page.CreatePageRequest;
 import com.nhaqua23.jotion.dto.page.PageResponse;
 import com.nhaqua23.jotion.dto.page.UpdateBackgroundRequest;
 import com.nhaqua23.jotion.dto.page.UpdateTitleRequest;
-import com.nhaqua23.jotion.exception.EntityNotFoundException;
-import com.nhaqua23.jotion.exception.ErrorCode;
 import com.nhaqua23.jotion.mapper.PageMapper;
 import com.nhaqua23.jotion.model.Page;
 import com.nhaqua23.jotion.model.SharedPage;
@@ -20,9 +18,8 @@ import com.nhaqua23.jotion.model.UserRole;
 import com.nhaqua23.jotion.model.Workspace;
 import com.nhaqua23.jotion.repository.PageRepository;
 import com.nhaqua23.jotion.repository.SharedPageRepository;
-import com.nhaqua23.jotion.repository.UserRepository;
-import com.nhaqua23.jotion.repository.WorkspaceRepository;
 import com.nhaqua23.jotion.service.PageService;
+import com.nhaqua23.jotion.support.fetcher.EntityFetcher;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,10 +30,9 @@ import lombok.extern.slf4j.Slf4j;
 public class PageServiceImpl implements PageService {
 
 	private final PageRepository pageRepository;
-	private final WorkspaceRepository workspaceRepository;
-	private final UserRepository userRepository;
 	private final SharedPageRepository sharedPageRepository;
 	private final PageMapper pageMapper;
+	private final EntityFetcher entityFetcher;
 
 	@Override
 	public PageResponse save(CreatePageRequest request) {
@@ -50,16 +46,8 @@ public class PageServiceImpl implements PageService {
 //			);
 //		}
 
-		User user = userRepository.findById(request.getAuthorId())
-				.orElseThrow(() -> new EntityNotFoundException(
-						"User not found with ID = " + request.getAuthorId(),
-						ErrorCode.USER_NOT_FOUND
-				));
-		Workspace workspace = workspaceRepository.findById(request.getWorkspaceId())
-				.orElseThrow(() -> new EntityNotFoundException(
-						"Workspace not found with ID = " + request.getWorkspaceId(),
-						ErrorCode.WORKSPACE_NOT_FOUND
-				));
+		User user = entityFetcher.getUserById(request.getAuthorId());
+		Workspace workspace = entityFetcher.getWorkspaceById(request.getWorkspaceId());
 
 		Page page = pageMapper.toPage(request);
 		page.setWorkspace(workspace);
@@ -84,21 +72,9 @@ public class PageServiceImpl implements PageService {
 
 		Boolean isSharedPage = sharedPageRepository.existsByPageId(id);
 		if (isSharedPage) {
-			Page page = pageRepository.findById(id)
-					.orElseThrow(() -> new EntityNotFoundException(
-							"Page not found with id: " + id,
-							ErrorCode.PAGE_NOT_FOUND
-					));
-			User user = userRepository.findById(request.getAuthorId())
-					.orElseThrow(() -> new EntityNotFoundException(
-							"User not found with id: " + request.getAuthorId(),
-							ErrorCode.USER_NOT_FOUND
-					));
-			SharedPage sharedPage = sharedPageRepository.findByUserAndPage(user, page)
-					.orElseThrow(() -> new EntityNotFoundException(
-							"Current user does not have access to unshared this page",
-							ErrorCode.PAGE_NOT_FOUND
-					));
+			Page page = entityFetcher.getPageById(id);
+			User user = entityFetcher.getUserById(request.getAuthorId());
+			SharedPage sharedPage = entityFetcher.getSharedPageByUserAndPage(user, page);
 
 			if (!sharedPage.getRole().equals(UserRole.OWNER) &&
 					!sharedPage.getRole().equals(UserRole.COLLABORATOR)) {
@@ -106,11 +82,7 @@ public class PageServiceImpl implements PageService {
 			}
 		}
 
-		Page page = pageRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException("" +
-						"Page not found with ID: " + id,
-						ErrorCode.PAGE_NOT_FOUND
-				));
+		Page page = entityFetcher.getPageById(id);
 
 		page.setTitle(request.getTitle());
 		page.setUpdatedAt(LocalDate.now());
@@ -122,21 +94,9 @@ public class PageServiceImpl implements PageService {
 	public PageResponse updateBackground(Integer id, UpdateBackgroundRequest request) {
 		Boolean isSharedPage = sharedPageRepository.existsByPageId(id);
 		if (isSharedPage) {
-			Page page = pageRepository.findById(id)
-					.orElseThrow(() -> new EntityNotFoundException(
-							"Page not found with id: " + id,
-							ErrorCode.PAGE_NOT_FOUND
-					));
-			User user = userRepository.findById(request.getAuthorId())
-					.orElseThrow(() -> new EntityNotFoundException(
-							"User not found with id: " + request.getAuthorId(),
-							ErrorCode.USER_NOT_FOUND
-					));
-			SharedPage sharedPage = sharedPageRepository.findByUserAndPage(user, page)
-					.orElseThrow(() -> new EntityNotFoundException(
-							"Current user does not have access to unshared this page",
-							ErrorCode.PAGE_NOT_FOUND
-					));
+			Page page = entityFetcher.getPageById(id);
+			User user = entityFetcher.getUserById(request.getAuthorId());
+			SharedPage sharedPage = entityFetcher.getSharedPageByUserAndPage(user, page);
 
 			if (!sharedPage.getRole().equals(UserRole.OWNER) &&
 					!sharedPage.getRole().equals(UserRole.COLLABORATOR)) {
@@ -144,11 +104,7 @@ public class PageServiceImpl implements PageService {
 			}
 		}
 
-		Page page = pageRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException("" +
-						"Page not found with ID: " + id,
-						ErrorCode.PAGE_NOT_FOUND
-				));
+		Page page = entityFetcher.getPageById(id);
 
 		page.setBackground(request.getBackground());
 		page.setUpdatedAt(LocalDate.now());
@@ -164,12 +120,7 @@ public class PageServiceImpl implements PageService {
 
 	@Override
 	public PageResponse getById(Integer id) {
-		return pageRepository.findById(id)
-				.map(pageMapper::toPageResponse)
-				.orElseThrow(() -> new EntityNotFoundException("" +
-						"Page not found with ID = " + id,
-						ErrorCode.PAGE_NOT_FOUND
-				));
+		return pageMapper.toPageResponse(entityFetcher.getPageById(id));
 	}
 
 	@Override
@@ -192,11 +143,7 @@ public class PageServiceImpl implements PageService {
 
 	@Override
 	public void delete(Integer id) {
-		Page page = pageRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException("" +
-						"Page not found with ID = " + id,
-						ErrorCode.PAGE_NOT_FOUND
-				));
+		Page page = entityFetcher.getPageById(id);
 
 		// List<SharedPage> list = sharedPageRepository.findAllByPageId(id);
 		// for (SharedPage shared : list) {

@@ -1,8 +1,8 @@
 package com.nhaqua23.jotion.controller.api;
 
 import com.nimbusds.jose.JOSEException;
-import com.nhaqua23.jotion.dto.AuthDTO;
-import com.nhaqua23.jotion.dto.IntrospectDTO;
+import com.nhaqua23.jotion.dto.auth.AuthDTO;
+import com.nhaqua23.jotion.dto.auth.IntrospectDTO;
 import com.nhaqua23.jotion.dto.user.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

@@ -2,8 +2,8 @@ package com.nhaqua23.jotion.controller;
 
 import com.nimbusds.jose.JOSEException;
 import com.nhaqua23.jotion.controller.api.AuthAPI;
-import com.nhaqua23.jotion.dto.AuthDTO;
-import com.nhaqua23.jotion.dto.IntrospectDTO;
+import com.nhaqua23.jotion.dto.auth.AuthDTO;
+import com.nhaqua23.jotion.dto.auth.IntrospectDTO;
 import com.nhaqua23.jotion.dto.user.UserResponse;
 import com.nhaqua23.jotion.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;

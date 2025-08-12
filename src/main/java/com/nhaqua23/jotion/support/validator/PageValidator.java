@@ -1,4 +1,4 @@
-package com.nhaqua23.jotion.validator;
+package com.nhaqua23.jotion.support.validator;
 
 import com.nhaqua23.jotion.dto.page.PageResponse;
 

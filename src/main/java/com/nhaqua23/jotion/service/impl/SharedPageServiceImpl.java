@@ -15,7 +15,6 @@ import com.nhaqua23.jotion.dto.shared.UnsharePageRequest;
 import com.nhaqua23.jotion.dto.shared.UpdateUserRoleRequest;
 import com.nhaqua23.jotion.exception.AuthorizationException;
 import com.nhaqua23.jotion.exception.EntityAlreadyExistsException;
-import com.nhaqua23.jotion.exception.EntityNotFoundException;
 import com.nhaqua23.jotion.exception.ErrorCode;
 import com.nhaqua23.jotion.mapper.SharedPageMapper;
 import com.nhaqua23.jotion.model.Page;
@@ -23,12 +22,10 @@ import com.nhaqua23.jotion.model.ShareStatus;
 import com.nhaqua23.jotion.model.SharedPage;
 import com.nhaqua23.jotion.model.User;
 import com.nhaqua23.jotion.model.UserRole;
-import com.nhaqua23.jotion.repository.PageRepository;
 import com.nhaqua23.jotion.repository.SharedPageRepository;
-import com.nhaqua23.jotion.repository.UserRepository;
 import com.nhaqua23.jotion.service.SharedPageService;
+import com.nhaqua23.jotion.support.fetcher.EntityFetcher;
 
-import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,32 +36,17 @@ import lombok.extern.slf4j.Slf4j;
 public class SharedPageServiceImpl implements SharedPageService {
 
 	private final SharedPageRepository sharedPageRepository;
-	private final PageRepository pageRepository;
-	private final UserRepository userRepository;
 	private final SharedPageMapper sharedPageMapper;
+	private final EntityFetcher entityFetcher;
 
 	@Override
 	public SharedPageResponse sharePage(SharePageRequest request) {
 		log.info("Sharing page {} with user {}", request.getPageId(), request.getUserEmail());
 
 		// Validate and fetch entities
-		Page page = pageRepository.findById(request.getPageId())
-				.orElseThrow(() -> new EntityNotFoundException(
-						"Page not found with id: " + request.getPageId(),
-						ErrorCode.PAGE_NOT_FOUND
-				));
-
-		User targetUser = userRepository.findByEmail(request.getUserEmail())
-				.orElseThrow(() -> new EntityNotFoundException(
-						"User not found with email: " + request.getUserEmail(),
-						ErrorCode.USER_NOT_FOUND
-				));
-
-		User sharedByUser = userRepository.findById(request.getSharedByUserId())
-				.orElseThrow(() -> new EntityNotFoundException(
-						"Shared by user not found with id: " + request.getSharedByUserId(),
-						ErrorCode.USER_NOT_FOUND
-				));
+		Page page = entityFetcher.getPageById(request.getPageId());
+		User targetUser = entityFetcher.getUserByEmail(request.getUserEmail());
+		User sharedByUser = entityFetcher.getUserById(request.getSharedByUserId());
 
 		// Check if the user requesting the share has permission
 		if (!canSharePage(request.getSharedByUserId(), request.getPageId())) {
@@ -113,30 +95,12 @@ public class SharedPageServiceImpl implements SharedPageService {
 		log.info("Unsharing page {} from user {}", request.getPageId(), request.getUserEmail());
 
 		// Validate entities
-		Page page = pageRepository.findById(request.getPageId())
-				.orElseThrow(() -> new EntityNotFoundException(
-						"Page not found with id: " + request.getPageId(),
-						ErrorCode.PAGE_NOT_FOUND
-				));
-
-		User targetUser = userRepository.findByEmail(request.getUserEmail())
-				.orElseThrow(() -> new EntityNotFoundException(
-						"User not found with email: " + request.getUserEmail(),
-						ErrorCode.USER_NOT_FOUND
-				));
-
-		User requestedByUser = userRepository.findById(request.getRequestedByUserId())
-				.orElseThrow(() -> new EntityNotFoundException(
-						"Requested by user not found with id: " + request.getRequestedByUserId(),
-						ErrorCode.USER_NOT_FOUND
-				));
+		Page page = entityFetcher.getPageById(request.getPageId());
+		User targetUser = entityFetcher.getUserByEmail(request.getUserEmail());
+		User requestedByUser = entityFetcher.getUserById(request.getRequestedByUserId());
 
 		// Find the shared page record
-		SharedPage sharedPage = sharedPageRepository.findByUserAndPage(targetUser, page)
-				.orElseThrow(() -> new EntityNotFoundException(
-						"Page is not shared with this user",
-						ErrorCode.PAGE_NOT_FOUND
-				));
+		SharedPage sharedPage = entityFetcher.getSharedPageByUserAndPage(targetUser, page);
 
 		// Check permissions - only owner or the user themselves can unshare
 		boolean isOwner = page.getAuthor().getId().equals(request.getRequestedByUserId());
@@ -162,22 +126,17 @@ public class SharedPageServiceImpl implements SharedPageService {
 
 	@Override
 	@Transactional(readOnly = true)
+	public SharedPageResponse getById(Integer id) {
+		return sharedPageMapper.toSharedPageResponse(entityFetcher.getSharedPageById(id));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public List<SharedPageResponse> getAllSharedPages() {
 		return sharedPageRepository.findAll()
 			.stream()
 			.map(sharedPageMapper::toSharedPageResponse)
 			.collect(Collectors.toList());
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public SharedPageResponse getById(Integer id) {
-		return sharedPageRepository.findById(id)
-			.map(sharedPageMapper::toSharedPageResponse)
-			.orElseThrow(() -> new EntityNotFoundException(
-					"Shared Page not found with id = " + id,
-					ErrorCode.PAGE_NOT_FOUND
-			));
 	}
 
 	@Override
@@ -199,14 +158,47 @@ public class SharedPageServiceImpl implements SharedPageService {
 	}
 
 	@Override
+	public SharedPageResponse updateUserRole(UpdateUserRoleRequest request) {
+		Page page = entityFetcher.getPageById(request.getPageId());
+		User user = entityFetcher.getUserById(request.getUserId());
+
+		if (!canSharePage(request.getUpdatedBy(), request.getPageId())) {
+			throw new AuthorizationException("You don't have permission to update role for this page", ErrorCode.ROLE_UPDATE_PERMISSION_DENIED);
+		}
+
+		SharedPage sharedPage = entityFetcher.getSharedPageByUserAndPage(user, page);
+
+		UserRole role = request.getRole();
+		sharedPage.setRole(role);
+
+		SharedPage updatedShare = sharedPageRepository.save(sharedPage);
+		return sharedPageMapper.toSharedPageResponse(updatedShare);
+	}
+
+	@Override
+	public SharedPageResponse revokePageAccess(RevokePageAccessRequest request) {
+		Page page = entityFetcher.getPageById(request.getPageId());
+		User user = entityFetcher.getUserById(request.getUserId());
+
+		if (!canSharePage(request.getRevokedBy(), request.getPageId())) {
+			throw new AuthorizationException("You don't have permission to revoke access to this page", ErrorCode.UNSHARE_PERMISSION_DENIED);
+		}
+
+		SharedPage sharedPage = entityFetcher.getSharedPageByUserAndPage(user, page);
+
+		// Mark as revoked instead of deleting for audit trail
+		sharedPage.setStatus(ShareStatus.REVOKED);
+		SharedPage updatedShare = sharedPageRepository.save(sharedPage);
+
+		log.info("Successfully revoked access to page {} for user {}", request.getPageId(), request.getUserId());
+		return sharedPageMapper.toSharedPageResponse(updatedShare);
+	}
+
+	@Override
 	@Transactional(readOnly = true)
 	public boolean hasPageAccess(Integer userId, Integer pageId) {
 		// Check if user is the page author
-		Page page = pageRepository.findById(pageId)
-			.orElseThrow(() -> new EntityNotFoundException(
-					"Page not found with id: " + pageId,
-					ErrorCode.PAGE_NOT_FOUND
-			));
+		Page page = entityFetcher.getPageById(pageId);
 		if (page.getAuthor().getId().equals(userId)) {
 			return true;
 		}
@@ -221,11 +213,7 @@ public class SharedPageServiceImpl implements SharedPageService {
 	@Transactional(readOnly = true)
 	public boolean canEditPage(Integer userId, Integer pageId) {
 		// Check if user is the page author
-		Page page = pageRepository.findById(pageId)
-			.orElseThrow(() -> new EntityNotFoundException(
-					"Page not found with id: " + pageId,
-					ErrorCode.PAGE_NOT_FOUND
-			));
+		Page page = entityFetcher.getPageById(pageId);
 		if (page.getAuthor().getId().equals(userId)) {
 			return true;
 		}
@@ -241,11 +229,7 @@ public class SharedPageServiceImpl implements SharedPageService {
 	@Transactional(readOnly = true)
 	public boolean canSharePage(Integer userId, Integer pageId) {
 		// Check if user is the page author
-		Page page = pageRepository.findById(pageId)
-			.orElseThrow(() -> new EntityNotFoundException(
-					"Page not found with id: " + pageId,
-					ErrorCode.PAGE_NOT_FOUND
-			));
+		Page page = entityFetcher.getPageById(pageId);
 
 		if (page.getAuthor().getId().equals(userId)) {
 			return true;
@@ -253,69 +237,6 @@ public class SharedPageServiceImpl implements SharedPageService {
 
 		// Check if user has OWNER role in shared pages
 		return hasOwnerRole(userId, pageId);
-	}
-
-	@Override
-	public SharedPageResponse revokePageAccess(RevokePageAccessRequest request) {
-		Page page = pageRepository.findById(request.getPageId())
-			.orElseThrow(() -> new EntityNotFoundException(
-					"Page not found with id: " + request.getPageId(),
-					ErrorCode.PAGE_NOT_FOUND
-			));
-
-		User user = userRepository.findById(request.getUserId())
-			.orElseThrow(() -> new EntityNotFoundException(
-					"User not found with id: " + request.getUserId(),
-					ErrorCode.USER_NOT_FOUND
-			));
-
-		if (!canSharePage(request.getRevokedBy(), request.getPageId())) {
-			throw new AuthorizationException("You don't have permission to revoke access to this page", ErrorCode.UNSHARE_PERMISSION_DENIED);
-		}
-
-		SharedPage sharedPage = sharedPageRepository.findByUserAndPage(user, page)
-			.orElseThrow(() -> new EntityNotFoundException(
-					"Page is not shared with this user",
-					ErrorCode.PAGE_NOT_FOUND
-			));
-
-		// Mark as revoked instead of deleting for audit trail
-		sharedPage.setStatus(ShareStatus.REVOKED);
-		SharedPage updatedShare = sharedPageRepository.save(sharedPage);
-
-		log.info("Successfully revoked access to page {} for user {}", request.getPageId(), request.getUserId());
-		return sharedPageMapper.toSharedPageResponse(updatedShare);
-	}
-
-	@Override
-	public SharedPageResponse updateUserRole(UpdateUserRoleRequest request) {
-		Page page = pageRepository.findById(request.getPageId())
-			.orElseThrow(() -> new EntityNotFoundException(
-					"Page not found with id: " + request.getPageId(),
-					ErrorCode.PAGE_NOT_FOUND
-			));
-
-		User user = userRepository.findById(request.getUserId())
-			.orElseThrow(() -> new EntityNotFoundException(
-					"User not found with id: " + request.getUserId(),
-					ErrorCode.USER_NOT_FOUND
-			));
-
-		if (!canSharePage(request.getUpdatedBy(), request.getPageId())) {
-			throw new AuthorizationException("You don't have permission to update role for this page", ErrorCode.ROLE_UPDATE_PERMISSION_DENIED);
-		}
-
-		SharedPage sharedPage = sharedPageRepository.findByUserAndPage(user, page)
-			.orElseThrow(() -> new EntityNotFoundException(
-					"Page is not shared with this user",
-					ErrorCode.PAGE_NOT_FOUND
-			));
-
-		UserRole role = request.getRole();
-		sharedPage.setRole(role);
-
-		SharedPage updatedShare = sharedPageRepository.save(sharedPage);
-		return sharedPageMapper.toSharedPageResponse(updatedShare);
 	}
 
 	private void ensureOwnerExists(Page page) {

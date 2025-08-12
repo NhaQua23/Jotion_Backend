@@ -1,4 +1,4 @@
-package com.nhaqua23.jotion.dto;
+package com.nhaqua23.jotion.dto.auth;
 
 import lombok.Builder;
 import lombok.Data;

@@ -1,9 +1,14 @@
 package com.nhaqua23.jotion.service.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.nhaqua23.jotion.dto.user.CreateUserRequest;
-import com.nhaqua23.jotion.dto.user.UserResponse;
 import com.nhaqua23.jotion.dto.user.UpdateProfileRequest;
-import com.nhaqua23.jotion.exception.EntityNotFoundException;
+import com.nhaqua23.jotion.dto.user.UserResponse;
 import com.nhaqua23.jotion.exception.ErrorCode;
 import com.nhaqua23.jotion.exception.InvalidEntityException;
 import com.nhaqua23.jotion.mapper.UserMapper;
@@ -11,14 +16,11 @@ import com.nhaqua23.jotion.model.User;
 import com.nhaqua23.jotion.model.UserRole;
 import com.nhaqua23.jotion.repository.UserRepository;
 import com.nhaqua23.jotion.service.UserService;
-import com.nhaqua23.jotion.validator.UserValidator;
+import com.nhaqua23.jotion.support.fetcher.EntityFetcher;
+import com.nhaqua23.jotion.support.validator.UserValidator;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +30,7 @@ public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final UserMapper userMapper;
+	private final EntityFetcher entityFetcher;
 
 	@Override
 	public UserResponse save(CreateUserRequest request) {
@@ -60,11 +63,7 @@ public class UserServiceImpl implements UserService {
 			);
 		}
 
-		User user = userRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException(
-						"User not found with ID = " + id,
-						ErrorCode.USER_NOT_FOUND
-				));
+		User user = entityFetcher.getUserById(id);
 		user.setUsername(request.getUsername());
 
 		return userMapper.toUserResponse(userRepository.save(user));
@@ -78,32 +77,17 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserResponse getById(Integer id) {
-		return userRepository.findById(id)
-				.map(userMapper::toUserResponse)
-				.orElseThrow(() -> new EntityNotFoundException(
-						"User not found with ID = " + id,
-						ErrorCode.USER_NOT_FOUND
-				));
+		return userMapper.toUserResponse(entityFetcher.getUserById(id));
 	}
 
 	@Override
 	public UserResponse getByEmail(String email) {
-		return userRepository.findByEmail(email)
-				.map(userMapper::toUserResponse)
-				.orElseThrow(() -> new EntityNotFoundException(
-						"User not found with email = " + email,
-						ErrorCode.USER_NOT_FOUND
-				));
+		return userMapper.toUserResponse(entityFetcher.getUserByEmail(email));
 	}
 
 	@Override
 	public void delete(Integer id) {
-		User user = userRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException(
-						"User not found with ID = " + id,
-						ErrorCode.USER_NOT_FOUND
-				));
-
+		User user = entityFetcher.getUserById(id);
 		userRepository.delete(user);
 	}
 }
